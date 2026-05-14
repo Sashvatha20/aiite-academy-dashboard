@@ -11,6 +11,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:3001',
+  'https://aiite-academy-dashboard-frontend.onrender.com',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
@@ -19,7 +20,11 @@ app.use(helmet());
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
     return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
@@ -28,6 +33,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -54,6 +61,11 @@ app.use('/api/sheets-sync', require('./routes/sheetSync'));
 
 app.use((err, req, res, next) => {
   console.error('GLOBAL ERROR:', err.stack || err.message || err);
+
+  if (err.message && err.message.startsWith('Not allowed by CORS:')) {
+    return res.status(403).json({ error: err.message });
+  }
+
   res.status(500).json({ error: err.message || 'Something went wrong' });
 });
 
