@@ -6,7 +6,7 @@ import {
   createFollowup,
   updateFollowup,
   syncStudentFollowupsSheet,
-} from '../../api/studentfollowups';
+} from '../../api/studentFollowups';
 import toast from 'react-hot-toast';
 
 const G = '#1D9E75';
