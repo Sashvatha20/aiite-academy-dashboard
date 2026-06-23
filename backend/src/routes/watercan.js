@@ -11,12 +11,62 @@ function isUUID(value) {
   );
 }
 
+function getTodayLocalDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizePlainDate(value) {
+  if (!value) return getTodayLocalDate();
+
+  if (typeof value === 'string') {
+    const v = value.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+    if (v.includes('T')) return v.split('T')[0];
+
+    if (/^\d{2}-\d{2}-\d{4}$/.test(v)) {
+      const [dd, mm, yyyy] = v.split('-');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return getTodayLocalDate();
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // GET /api/watercan
 router.get('/', auth, async (req, res) => {
   try {
     const { month, year } = req.query;
 
-    let query = `SELECT * FROM water_can_details WHERE 1=1`;
+    let query = `
+      SELECT
+        id,
+        date::text AS date,
+        no_of_ro_water,
+        no_of_bisleri_water,
+        total_water_cans,
+        amount,
+        paid_or_balance,
+        balance,
+        bisleri_price,
+        ro_price,
+        created_at,
+        updated_at
+      FROM water_can_details
+      WHERE 1=1
+    `;
+
     const params = [];
     let i = 1;
 
@@ -30,8 +80,9 @@ router.get('/', auth, async (req, res) => {
 
     const result = await pool.query(query, params);
 
-    const summaryMonth = Number(month) || new Date().getMonth() + 1;
-    const summaryYear = Number(year) || new Date().getFullYear();
+    const now = new Date();
+    const summaryMonth = Number(month) || now.getMonth() + 1;
+    const summaryYear = Number(year) || now.getFullYear();
 
     const summary = await pool.query(
       `
@@ -58,6 +109,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // POST /api/watercan
+// Same date -> merge into existing row
 router.post('/', auth, async (req, res) => {
   try {
     const {
@@ -68,11 +120,12 @@ router.post('/', auth, async (req, res) => {
       balance,
     } = req.body;
 
+    const finalDate = normalizePlainDate(date);
     const ro = Number(no_of_ro_water) || 0;
     const bis = Number(no_of_bisleri_water) || 0;
-    const total = ro + bis;
     const roPrice = 40;
     const bisPrice = 120;
+    const total = ro + bis;
     const amount = (ro * roPrice) + (bis * bisPrice);
     const finalStatus = paid_or_balance || 'paid';
     const finalBalance = Number(balance) || 0;
@@ -80,13 +133,50 @@ router.post('/', auth, async (req, res) => {
     const result = await pool.query(
       `
         INSERT INTO water_can_details
-          (date, no_of_ro_water, no_of_bisleri_water, total_water_cans,
-           amount, paid_or_balance, balance, ro_price, bisleri_price)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-        RETURNING *
+          (
+            date,
+            no_of_ro_water,
+            no_of_bisleri_water,
+            total_water_cans,
+            amount,
+            paid_or_balance,
+            balance,
+            ro_price,
+            bisleri_price
+          )
+        VALUES ($1, $2, $3, $4, $5, $6::payment_status, $7, $8, $9)
+        ON CONFLICT ON CONSTRAINT water_can_details_date_unique
+        DO UPDATE SET
+          no_of_ro_water = water_can_details.no_of_ro_water + EXCLUDED.no_of_ro_water,
+          no_of_bisleri_water = water_can_details.no_of_bisleri_water + EXCLUDED.no_of_bisleri_water,
+          total_water_cans = water_can_details.total_water_cans + EXCLUDED.total_water_cans,
+          amount = water_can_details.amount + EXCLUDED.amount,
+          paid_or_balance = CASE
+            WHEN EXCLUDED.paid_or_balance = 'balance'::payment_status
+                 OR water_can_details.balance + EXCLUDED.balance > 0
+              THEN 'balance'::payment_status
+            ELSE 'paid'::payment_status
+          END,
+          balance = water_can_details.balance + EXCLUDED.balance,
+          ro_price = EXCLUDED.ro_price,
+          bisleri_price = EXCLUDED.bisleri_price,
+          updated_at = NOW()
+        RETURNING
+          id,
+          date::text AS date,
+          no_of_ro_water,
+          no_of_bisleri_water,
+          total_water_cans,
+          amount,
+          paid_or_balance,
+          balance,
+          bisleri_price,
+          ro_price,
+          created_at,
+          updated_at
       `,
       [
-        date || new Date(),
+        finalDate,
         ro,
         bis,
         total,
@@ -130,6 +220,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid water log id' });
     }
 
+    const finalDate = date ? normalizePlainDate(date) : null;
     const ro = Number(no_of_ro_water) || 0;
     const bis = Number(no_of_bisleri_water) || 0;
     const total = ro + bis;
@@ -146,16 +237,28 @@ router.put('/:id', auth, async (req, res) => {
           no_of_bisleri_water = $3,
           total_water_cans = $4,
           amount = $5,
-          paid_or_balance = COALESCE($6, paid_or_balance),
+          paid_or_balance = COALESCE($6::payment_status, paid_or_balance),
           balance = COALESCE($7, balance),
           ro_price = $8,
           bisleri_price = $9,
           updated_at = NOW()
         WHERE id = $10
-        RETURNING *
+        RETURNING
+          id,
+          date::text AS date,
+          no_of_ro_water,
+          no_of_bisleri_water,
+          total_water_cans,
+          amount,
+          paid_or_balance,
+          balance,
+          bisleri_price,
+          ro_price,
+          created_at,
+          updated_at
       `,
       [
-        date || null,
+        finalDate,
         ro,
         bis,
         total,
@@ -201,7 +304,19 @@ router.delete('/:id', auth, async (req, res) => {
       `
         DELETE FROM water_can_details
         WHERE id = $1
-        RETURNING *
+        RETURNING
+          id,
+          date::text AS date,
+          no_of_ro_water,
+          no_of_bisleri_water,
+          total_water_cans,
+          amount,
+          paid_or_balance,
+          balance,
+          bisleri_price,
+          ro_price,
+          created_at,
+          updated_at
       `,
       [id]
     );

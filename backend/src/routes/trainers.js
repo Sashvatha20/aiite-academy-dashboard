@@ -81,11 +81,17 @@ router.get('/', auth, async (req, res) => {
 router.get('/active', auth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT t.id, t.name, t.phone, u.username
+      `SELECT DISTINCT ON (LOWER(TRIM(t.name)))
+         t.id,
+         t.name,
+         t.phone,
+         u.username
        FROM trainers t
        JOIN users u ON t.user_id = u.id
        WHERE u.is_active = true
-       ORDER BY t.name`
+         AND t.name IS NOT NULL
+         AND TRIM(t.name) <> ''
+       ORDER BY LOWER(TRIM(t.name)), t.id ASC`
     );
 
     res.json({ trainers: result.rows });
@@ -99,9 +105,16 @@ router.get('/active', auth, async (req, res) => {
 router.get('/courses', auth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, course_name, fee, duration, mode
+      `SELECT DISTINCT ON (LOWER(TRIM(course_name)))
+         id,
+         course_name,
+         fee,
+         duration,
+         mode
        FROM courses
-       ORDER BY course_name`
+       WHERE course_name IS NOT NULL
+         AND TRIM(course_name) <> ''
+       ORDER BY LOWER(TRIM(course_name)), id ASC`
     );
 
     res.json({ courses: result.rows });

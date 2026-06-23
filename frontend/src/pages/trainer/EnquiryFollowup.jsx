@@ -186,11 +186,19 @@ const ticketStatusColor = {
   closed: 'green',
 };
 
-const today = () => new Date().toISOString().split('T')[0];
+const toLocalDateInputValue = (value = new Date()) => {
+  const d = new Date(value);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const today = () => toLocalDateInputValue();
 
 const formatDate = (value) => {
   if (!value) return '';
-  return String(value).split('T')[0];
+  return toLocalDateInputValue(value);
 };
 
 export default function EnquiryFollowup() {

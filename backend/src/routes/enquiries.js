@@ -40,6 +40,30 @@ const normalizeDate = (v) => {
   return v;
 };
 
+const normalizePlainDate = (value) => {
+  if (!value) return new Date().toISOString().split('T')[0];
+
+  if (typeof value === 'string') {
+    const v = value.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+    if (/^\d{2}-\d{2}-\d{4}$/.test(v)) {
+      const [dd, mm, yyyy] = v.split('-');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    if (v.includes('T')) return v.split('T')[0];
+  }
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 // GET /api/enquiries
 router.get('/', auth, async (req, res) => {
   try {
@@ -123,29 +147,51 @@ router.post('/count/daily', auth, async (req, res) => {
       remarks,
     } = req.body;
 
-    const finalDate = normalizeDate(countdate || date);
-    const total = toNumberOrNull(totalcount);
-    const finalTotal = total !== null ? total : 0;
+    const rawDate = countdate || date;
+    const finalDate = normalizePlainDate(rawDate);
+
+    const callCount = toNumberOrNull(call_enquiries) ?? 0;
+    const walkInCount = toNumberOrNull(walk_in_enquiries) ?? 0;
+    const finalRemarks = toTrimmedOrNull(remarks ?? notes);
+    const courseSuggestedText = toTrimmedOrNull(course_suggested_by_us);
+    const providedTotal = toNumberOrNull(totalcount);
+    const insertTotal = providedTotal !== null ? providedTotal : callCount + walkInCount;
 
     const result = await pool.query(
       `INSERT INTO enquiry_daily_count
         (date, call_enquiries, walk_in_enquiries, total_enquiries, course_suggested_by_us, remarks)
-       VALUES ($1,$2,$3,$4,$5,$6)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (date) DO UPDATE SET
-         call_enquiries = EXCLUDED.call_enquiries,
-         walk_in_enquiries = EXCLUDED.walk_in_enquiries,
-         total_enquiries = EXCLUDED.total_enquiries,
-         course_suggested_by_us = EXCLUDED.course_suggested_by_us,
-         remarks = EXCLUDED.remarks,
+         call_enquiries = COALESCE(enquiry_daily_count.call_enquiries, 0) + COALESCE(EXCLUDED.call_enquiries, 0),
+         walk_in_enquiries = COALESCE(enquiry_daily_count.walk_in_enquiries, 0) + COALESCE(EXCLUDED.walk_in_enquiries, 0),
+         total_enquiries =
+           (COALESCE(enquiry_daily_count.call_enquiries, 0) + COALESCE(EXCLUDED.call_enquiries, 0)) +
+           (COALESCE(enquiry_daily_count.walk_in_enquiries, 0) + COALESCE(EXCLUDED.walk_in_enquiries, 0)),
+         course_suggested_by_us = CASE
+           WHEN EXCLUDED.course_suggested_by_us IS NOT NULL AND EXCLUDED.course_suggested_by_us <> '' THEN
+             CASE
+               WHEN enquiry_daily_count.course_suggested_by_us IS NULL OR enquiry_daily_count.course_suggested_by_us = '' THEN EXCLUDED.course_suggested_by_us
+               ELSE enquiry_daily_count.course_suggested_by_us || '; ' || EXCLUDED.course_suggested_by_us
+             END
+           ELSE enquiry_daily_count.course_suggested_by_us
+         END,
+         remarks = CASE
+           WHEN EXCLUDED.remarks IS NOT NULL AND EXCLUDED.remarks <> '' THEN
+             CASE
+               WHEN enquiry_daily_count.remarks IS NULL OR enquiry_daily_count.remarks = '' THEN EXCLUDED.remarks
+               ELSE enquiry_daily_count.remarks || '; ' || EXCLUDED.remarks
+             END
+           ELSE enquiry_daily_count.remarks
+         END,
          updated_at = NOW()
        RETURNING *`,
       [
         finalDate,
-        toNumberOrNull(call_enquiries) ?? 0,
-        toNumberOrNull(walk_in_enquiries) ?? 0,
-        finalTotal,
-        toTrimmedOrNull(course_suggested_by_us),
-        toTrimmedOrNull(remarks ?? notes),
+        callCount,
+        walkInCount,
+        insertTotal,
+        courseSuggestedText,
+        finalRemarks,
       ]
     );
 
@@ -543,18 +589,18 @@ router.post('/:id/convert', auth, async (req, res) => {
     const studentResult = await client.query(
       `INSERT INTO students
         (
-          candidatename,
+          candidate_name,
           phone,
           email,
-          whatsappnumber,
-          certificateno,
-          batchid,
-          totalfee,
-          paymentmode,
-          joineddate,
+          whatsapp_number,
+          certificate_no,
+          batch_id,
+          total_fee,
+          payment_mode,
+          joined_date,
           status,
           notes,
-          resolutionnote
+          resolution_note
         )
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING *`,
@@ -578,8 +624,8 @@ router.post('/:id/convert', auth, async (req, res) => {
 
     if (initialPaymentNum > 0) {
       await client.query(
-        `INSERT INTO feepayments
-          (studentid, amount, paymentmode, referenceno, notes, paymentdate)
+        `INSERT INTO fee_payments
+          (student_id, amount, payment_mode, reference_no, notes, payment_date)
          VALUES ($1,$2,$3,$4,$5,$6)`,
         [
           student.id,

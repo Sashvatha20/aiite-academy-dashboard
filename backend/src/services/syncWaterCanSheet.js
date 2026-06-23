@@ -2,12 +2,24 @@ const { google } = require('googleapis');
 const path = require('path');
 const pool = require('../db');
 
-const SHEET_NAME = 'Water_Can_Log';
+const SHEET_NAME = 'Water_can_log';
 
 function formatDate(value) {
   if (!value) return '';
+
+  if (typeof value === 'string') {
+    const v = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    if (v.includes('T')) return v.split('T')[0];
+  }
+
   try {
-    return new Date(value).toISOString().split('T')[0];
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   } catch {
     return '';
   }
@@ -16,7 +28,15 @@ function formatDate(value) {
 function formatDateTime(value) {
   if (!value) return '';
   try {
-    return new Date(value).toISOString().replace('T', ' ').split('.')[0];
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   } catch {
     return '';
   }
@@ -54,12 +74,16 @@ async function syncWaterCanSheet() {
     throw new Error('GOOGLE_SPREADSHEET_ID is missing in environment');
   }
 
+  console.log('Syncing water can sheet...');
+  console.log('Spreadsheet ID:', spreadsheetId);
+  console.log('Sheet name:', SHEET_NAME);
+
   const sheets = await getSheetsClient();
 
   const result = await pool.query(`
     SELECT
       id AS db_id,
-      date,
+      date::text AS date,
       no_of_ro_water,
       ro_price,
       no_of_bisleri_water,
@@ -117,12 +141,14 @@ async function syncWaterCanSheet() {
     ];
   });
 
+  console.log('Rows to sync:', rows.length);
+
   await sheets.spreadsheets.values.clear({
     spreadsheetId,
     range: `${SHEET_NAME}!A:N`,
   });
 
-  await sheets.spreadsheets.values.update({
+  const updateRes = await sheets.spreadsheets.values.update({
     spreadsheetId,
     range: `${SHEET_NAME}!A1`,
     valueInputOption: 'RAW',
@@ -130,6 +156,10 @@ async function syncWaterCanSheet() {
       values: [headers, ...rows],
     },
   });
+
+  console.log('Water can sheet synced successfully');
+  console.log('Updated range:', updateRes.data.updatedRange);
+  console.log('Updated rows:', updateRes.data.updatedRows);
 
   return {
     success: true,
