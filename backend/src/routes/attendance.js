@@ -28,18 +28,40 @@ function isOfficeWifi(clientIP) {
   return OFFICE_IP_PREFIXES.some((prefix) => clientIP.startsWith(prefix));
 }
 
-function getTrainerIdFromToken(req, res) {
-  const trainerId = req.user?.trainer_id;
+async function getTrainerIdFromToken(req, res) {
+  const userId = req.user?.id;
 
-  if (!trainerId) {
-    res.status(403).json({
+  if (!userId) {
+    res.status(401).json({
       success: false,
-      message: 'Trainer account not found in token.',
+      message: 'User not found in token.',
     });
     return null;
   }
 
-  return trainerId;
+  try {
+    const result = await pool.query(
+      `SELECT id FROM trainers WHERE user_id = $1 LIMIT 1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(403).json({
+        success: false,
+        message: 'Trainer record not found for this user.',
+      });
+      return null;
+    }
+
+    return result.rows[0].id;
+  } catch (err) {
+    console.error('Trainer lookup error:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resolve trainer account.',
+    });
+    return null;
+  }
 }
 
 function checkOfficeWifi(req, res, clientIP) {
@@ -88,7 +110,7 @@ router.get('/my-ip', (req, res) => {
 // ─── CHECK-IN ─────────────────────────────────────────────
 // POST /api/attendance/checkin
 router.post('/checkin', authMiddleware, async (req, res) => {
-  const trainerId = getTrainerIdFromToken(req, res);
+  const trainerId = await getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const clientIP = req.body.clientIP || getClientIP(req);
@@ -129,7 +151,7 @@ router.post('/checkin', authMiddleware, async (req, res) => {
 // ─── CHECK-OUT ────────────────────────────────────────────
 // POST /api/attendance/checkout
 router.post('/checkout', authMiddleware, async (req, res) => {
-  const trainerId = getTrainerIdFromToken(req, res);
+  const trainerId = await getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const clientIP = req.body.clientIP || getClientIP(req);
@@ -165,7 +187,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 // ─── TODAY STATUS ─────────────────────────────────────────
 // GET /api/attendance/today-status
 router.get('/today-status', authMiddleware, async (req, res) => {
-  const trainerId = getTrainerIdFromToken(req, res);
+  const trainerId = await getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const today = getISTDateString();
@@ -190,7 +212,7 @@ router.get('/today-status', authMiddleware, async (req, res) => {
 // ─── MY RECORDS (THIS MONTH) ──────────────────────────────
 // GET /api/attendance/my
 router.get('/my', authMiddleware, async (req, res) => {
-  const trainerId = getTrainerIdFromToken(req, res);
+  const trainerId = await getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const { month, year } = req.query;
@@ -222,7 +244,7 @@ router.get('/my', authMiddleware, async (req, res) => {
 // ─── ESCALATIONS AGAINST ME ───────────────────────────────
 // GET /api/attendance/escalations/against-me
 router.get('/escalations/against-me', authMiddleware, async (req, res) => {
-  const trainerId = getTrainerIdFromToken(req, res);
+  const trainerId = await getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   try {
