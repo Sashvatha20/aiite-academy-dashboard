@@ -3,8 +3,6 @@ const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/auth');
 
-console.log('ATTENDANCE ROUTE FILE LOADED');
-
 const OFFICE_IP_PREFIXES = (
   process.env.OFFICE_WIFI_IP_PREFIX || '49.206.'
 )
@@ -30,9 +28,8 @@ function isOfficeWifi(clientIP) {
   return OFFICE_IP_PREFIXES.some((prefix) => clientIP.startsWith(prefix));
 }
 
-async function getTrainerIdFromToken(req, res) {
+function getTrainerIdFromToken(req, res) {
   const userId = req.user?.id;
-  console.log('ATTENDANCE DEBUG userId:', userId);
 
   if (!userId) {
     res.status(401).json({
@@ -42,53 +39,7 @@ async function getTrainerIdFromToken(req, res) {
     return null;
   }
 
-  try {
-    const result = await pool.query(
-      `SELECT id, user_id, name
-       FROM trainers
-       WHERE user_id = $1
-       LIMIT 1`,
-      [userId]
-    );
-
-    console.log('ATTENDANCE DEBUG trainer rows:', result.rows);
-
-    if (result.rows.length === 0) {
-      res.status(403).json({
-        success: false,
-        message: 'Trainer record not found for this user.',
-      });
-      return null;
-    }
-
-    const trainerId = result.rows[0].id;
-
-    const verifyTrainer = await pool.query(
-      `SELECT id
-       FROM trainers
-       WHERE id = $1
-       LIMIT 1`,
-      [trainerId]
-    );
-
-    if (verifyTrainer.rows.length === 0) {
-      res.status(403).json({
-        success: false,
-        message: 'Resolved trainer ID does not exist in trainers table.',
-      });
-      return null;
-    }
-
-    console.log('ATTENDANCE DEBUG resolved trainerId:', trainerId);
-    return trainerId;
-  } catch (err) {
-    console.error('Trainer lookup error:', err.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to resolve trainer account.',
-    });
-    return null;
-  }
+  return userId;
 }
 
 function checkOfficeWifi(req, res, clientIP) {
@@ -120,7 +71,6 @@ function getISTDateString() {
   }).format(new Date());
 }
 
-// ─── TEST ROUTE (no auth) ─────────────────────────────────
 // GET /api/attendance/my-ip
 router.get('/my-ip', (req, res) => {
   const ip = getClientIP(req);
@@ -134,10 +84,9 @@ router.get('/my-ip', (req, res) => {
   });
 });
 
-// ─── CHECK-IN ─────────────────────────────────────────────
 // POST /api/attendance/checkin
 router.post('/checkin', authMiddleware, async (req, res) => {
-  const trainerId = await getTrainerIdFromToken(req, res);
+  const trainerId = getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const clientIP = req.body.clientIP || getClientIP(req);
@@ -146,35 +95,6 @@ router.post('/checkin', authMiddleware, async (req, res) => {
   const today = getISTDateString();
 
   try {
-    console.log('ATTENDANCE DEBUG inserting:', {
-      trainerId,
-      today,
-      clientIP,
-      userFromToken: req.user,
-    });
-
-    const verifyTrainer = await pool.query(
-      `SELECT id, user_id, name
-       FROM trainers
-       WHERE id = $1
-       LIMIT 1`,
-      [trainerId]
-    );
-
-    console.log('ATTENDANCE DEBUG verify trainer before insert:', verifyTrainer.rows);
-
-    if (verifyTrainer.rows.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Trainer not found for trainer_id ${trainerId}`,
-      });
-    }
-
-    const dbCheck = await pool.query(
-      `select current_database(), current_schema()`
-    );
-    console.log('ATTENDANCE DEBUG db:', dbCheck.rows);
-
     const existing = await pool.query(
       `SELECT id, trainer_id, date, check_in, check_out, status
        FROM attendance
@@ -204,10 +124,9 @@ router.post('/checkin', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── CHECK-OUT ────────────────────────────────────────────
 // POST /api/attendance/checkout
 router.post('/checkout', authMiddleware, async (req, res) => {
-  const trainerId = await getTrainerIdFromToken(req, res);
+  const trainerId = getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const clientIP = req.body.clientIP || getClientIP(req);
@@ -216,13 +135,6 @@ router.post('/checkout', authMiddleware, async (req, res) => {
   const today = getISTDateString();
 
   try {
-    console.log('ATTENDANCE DEBUG checkout:', {
-      trainerId,
-      today,
-      clientIP,
-      userFromToken: req.user,
-    });
-
     const result = await pool.query(
       `UPDATE attendance
        SET check_out = NOW()
@@ -247,10 +159,9 @@ router.post('/checkout', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── TODAY STATUS ─────────────────────────────────────────
 // GET /api/attendance/today-status
 router.get('/today-status', authMiddleware, async (req, res) => {
-  const trainerId = await getTrainerIdFromToken(req, res);
+  const trainerId = getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const today = getISTDateString();
@@ -272,10 +183,9 @@ router.get('/today-status', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── MY RECORDS (THIS MONTH) ──────────────────────────────
 // GET /api/attendance/my
 router.get('/my', authMiddleware, async (req, res) => {
-  const trainerId = await getTrainerIdFromToken(req, res);
+  const trainerId = getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   const { month, year } = req.query;
@@ -304,10 +214,9 @@ router.get('/my', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── ESCALATIONS AGAINST ME ───────────────────────────────
 // GET /api/attendance/escalations/against-me
 router.get('/escalations/against-me', authMiddleware, async (req, res) => {
-  const trainerId = await getTrainerIdFromToken(req, res);
+  const trainerId = getTrainerIdFromToken(req, res);
   if (!trainerId) return;
 
   try {
