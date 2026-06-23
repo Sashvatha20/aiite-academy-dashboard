@@ -170,6 +170,11 @@ router.post('/checkin', authMiddleware, async (req, res) => {
       });
     }
 
+    const dbCheck = await pool.query(
+      `select current_database(), current_schema()`
+    );
+    console.log('ATTENDANCE DEBUG db:', dbCheck.rows);
+
     const existing = await pool.query(
       `SELECT id, trainer_id, date, check_in, check_out, status
        FROM attendance
