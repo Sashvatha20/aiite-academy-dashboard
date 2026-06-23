@@ -3,6 +3,8 @@ const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/auth');
 
+console.log('ATTENDANCE ROUTE FILE LOADED');
+
 const OFFICE_IP_PREFIXES = (
   process.env.OFFICE_WIFI_IP_PREFIX || '49.206.'
 )
@@ -30,6 +32,7 @@ function isOfficeWifi(clientIP) {
 
 async function getTrainerIdFromToken(req, res) {
   const userId = req.user?.id;
+  console.log('ATTENDANCE DEBUG userId:', userId);
 
   if (!userId) {
     res.status(401).json({
@@ -41,9 +44,14 @@ async function getTrainerIdFromToken(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT id FROM trainers WHERE user_id = $1 LIMIT 1`,
+      `SELECT id, user_id, name
+       FROM trainers
+       WHERE user_id = $1
+       LIMIT 1`,
       [userId]
     );
+
+    console.log('ATTENDANCE DEBUG trainer rows:', result.rows);
 
     if (result.rows.length === 0) {
       res.status(403).json({
@@ -53,7 +61,26 @@ async function getTrainerIdFromToken(req, res) {
       return null;
     }
 
-    return result.rows[0].id;
+    const trainerId = result.rows[0].id;
+
+    const verifyTrainer = await pool.query(
+      `SELECT id
+       FROM trainers
+       WHERE id = $1
+       LIMIT 1`,
+      [trainerId]
+    );
+
+    if (verifyTrainer.rows.length === 0) {
+      res.status(403).json({
+        success: false,
+        message: 'Resolved trainer ID does not exist in trainers table.',
+      });
+      return null;
+    }
+
+    console.log('ATTENDANCE DEBUG resolved trainerId:', trainerId);
+    return trainerId;
   } catch (err) {
     console.error('Trainer lookup error:', err.message);
     res.status(500).json({
@@ -119,6 +146,30 @@ router.post('/checkin', authMiddleware, async (req, res) => {
   const today = getISTDateString();
 
   try {
+    console.log('ATTENDANCE DEBUG inserting:', {
+      trainerId,
+      today,
+      clientIP,
+      userFromToken: req.user,
+    });
+
+    const verifyTrainer = await pool.query(
+      `SELECT id, user_id, name
+       FROM trainers
+       WHERE id = $1
+       LIMIT 1`,
+      [trainerId]
+    );
+
+    console.log('ATTENDANCE DEBUG verify trainer before insert:', verifyTrainer.rows);
+
+    if (verifyTrainer.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Trainer not found for trainer_id ${trainerId}`,
+      });
+    }
+
     const existing = await pool.query(
       `SELECT id, trainer_id, date, check_in, check_out, status
        FROM attendance
@@ -160,6 +211,13 @@ router.post('/checkout', authMiddleware, async (req, res) => {
   const today = getISTDateString();
 
   try {
+    console.log('ATTENDANCE DEBUG checkout:', {
+      trainerId,
+      today,
+      clientIP,
+      userFromToken: req.user,
+    });
+
     const result = await pool.query(
       `UPDATE attendance
        SET check_out = NOW()
