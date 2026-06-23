@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useCallback } from 'react';
+import api from '../../api/axiosInstance';
 import {
   RefreshCw,
   CalendarDays,
@@ -27,9 +27,7 @@ import {
   Tooltip,
 } from 'recharts';
 
-const API_BASE = 'http://localhost:5000/api';
 const OFFICE_IP_PREFIX = '49.206.';
-
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString('en-IN', {
@@ -83,9 +81,6 @@ export default function TrainerDashboard() {
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [clientIP, setClientIP] = useState(null);
 
-  const token = localStorage.getItem('aiite_token');
-  const headers = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
-
   useEffect(() => {
     fetch('https://api.ipify.org?format=json')
       .then((res) => res.json())
@@ -93,30 +88,27 @@ export default function TrainerDashboard() {
       .catch(() => setClientIP(null));
   }, []);
 
-  const fetchDashboard = useCallback(
-    async (silent = false) => {
-      if (silent) setRefreshing(true);
-      else setLoading(true);
+  const fetchDashboard = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
 
-      setError('');
+    setError('');
 
-      try {
-        const [dashRes, todayRes] = await Promise.all([
-          axios.get(`${API_BASE}/trainers/dashboard`, { headers }),
-          axios.get(`${API_BASE}/attendance/today-status`, { headers }),
-        ]);
+    try {
+      const [dashRes, todayRes] = await Promise.all([
+        api.get('/trainers/dashboard'),
+        api.get('/attendance/today-status'),
+      ]);
 
-        setData(dashRes.data?.data || null);
-        setTodayAttendance(todayRes.data?.data || null);
-      } catch (err) {
-        setError('Failed to load dashboard. Please try again.');
-      } finally {
-        if (silent) setRefreshing(false);
-        else setLoading(false);
-      }
-    },
-    [headers]
-  );
+      setData(dashRes.data?.data || null);
+      setTodayAttendance(todayRes.data?.data || null);
+    } catch (err) {
+      setError('Failed to load dashboard. Please try again.');
+    } finally {
+      if (silent) setRefreshing(false);
+      else setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchDashboard();
@@ -127,7 +119,7 @@ export default function TrainerDashboard() {
     setActionMsg({ type: '', text: '' });
 
     try {
-      await axios.post(`${API_BASE}/attendance/checkin`, { clientIP }, { headers });
+      await api.post('/attendance/checkin', { clientIP });
       await fetchDashboard(true);
       setActionMsg({ type: 'ok', text: 'Checked in successfully.' });
     } catch (err) {
@@ -147,7 +139,7 @@ export default function TrainerDashboard() {
     setActionMsg({ type: '', text: '' });
 
     try {
-      await axios.post(`${API_BASE}/attendance/checkout`, { clientIP }, { headers });
+      await api.post('/attendance/checkout', { clientIP });
       await fetchDashboard(true);
       setActionMsg({ type: 'ok', text: 'Checked out successfully.' });
     } catch (err) {
@@ -659,7 +651,6 @@ const S = {
     background: BG,
     minHeight: '100%',
   },
-
   loadingWrap: {
     minHeight: 320,
     display: 'flex',
@@ -667,14 +658,12 @@ const S = {
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   loadingText: {
     color: MUTED,
     marginTop: 14,
     fontSize: 14,
     fontWeight: 500,
   },
-
   spinner: {
     width: 42,
     height: 42,
@@ -683,7 +672,6 @@ const S = {
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
-
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -691,7 +679,6 @@ const S = {
     marginBottom: 20,
     gap: 16,
   },
-
   eyebrow: {
     fontSize: 12,
     fontWeight: 700,
@@ -700,7 +687,6 @@ const S = {
     letterSpacing: '.08em',
     marginBottom: 6,
   },
-
   title: {
     fontSize: 30,
     fontWeight: 800,
@@ -708,13 +694,11 @@ const S = {
     margin: 0,
     lineHeight: 1.1,
   },
-
   subtitle: {
     fontSize: 14,
     color: MUTED,
     marginTop: 6,
   },
-
   refreshBtn: {
     background: '#fff',
     border: `1px solid ${LINE}`,
@@ -728,7 +712,6 @@ const S = {
     fontWeight: 600,
     boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)',
   },
-
   alertErr: {
     background: '#FEF2F2',
     color: '#B91C1C',
@@ -741,7 +724,6 @@ const S = {
     alignItems: 'center',
     gap: 10,
   },
-
   alertOk: {
     background: '#ECFDF5',
     color: '#166534',
@@ -754,14 +736,12 @@ const S = {
     alignItems: 'center',
     gap: 10,
   },
-
   heroGrid: {
     display: 'grid',
     gridTemplateColumns: '1.1fr 0.9fr',
     gap: 18,
     marginBottom: 18,
   },
-
   heroCard: {
     background: '#fff',
     borderRadius: 20,
@@ -769,7 +749,6 @@ const S = {
     border: `1px solid ${LINE}`,
     boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
   },
-
   summaryCard: {
     background: '#fff',
     borderRadius: 20,
@@ -777,7 +756,6 @@ const S = {
     border: `1px solid ${LINE}`,
     boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
   },
-
   heroTop: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -785,7 +763,6 @@ const S = {
     alignItems: 'flex-start',
     marginBottom: 18,
   },
-
   heroLabel: {
     fontSize: 12,
     color: G,
@@ -794,14 +771,12 @@ const S = {
     letterSpacing: '.06em',
     marginBottom: 5,
   },
-
   heroTitle: {
     fontSize: 20,
     color: TEXT,
     fontWeight: 700,
     lineHeight: 1.2,
   },
-
   heroIconBox: {
     width: 40,
     height: 40,
@@ -813,7 +788,6 @@ const S = {
     border: '1px solid #CBEFDF',
     flexShrink: 0,
   },
-
   ipBox: {
     background: SOFT,
     border: `1px solid ${LINE}`,
@@ -821,7 +795,6 @@ const S = {
     padding: 14,
     marginBottom: 16,
   },
-
   ipRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -830,7 +803,6 @@ const S = {
     marginBottom: 10,
     flexWrap: 'wrap',
   },
-
   ipLabel: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -839,7 +811,6 @@ const S = {
     color: '#334155',
     fontWeight: 600,
   },
-
   code: {
     background: '#fff',
     padding: '4px 8px',
@@ -851,7 +822,6 @@ const S = {
     border: `1px solid ${LINE}`,
     fontSize: 12,
   },
-
   inlineStatus: {
     marginTop: 4,
     borderRadius: 999,
@@ -862,7 +832,6 @@ const S = {
     display: 'inline-flex',
     alignItems: 'center',
   },
-
   primaryBtn: {
     color: '#fff',
     border: 'none',
@@ -877,24 +846,20 @@ const S = {
     justifyContent: 'center',
     boxShadow: '0 10px 22px rgba(29, 158, 117, 0.18)',
   },
-
   checkoutBtn: {
     background: '#A13544',
     boxShadow: '0 10px 22px rgba(161, 53, 68, 0.18)',
   },
-
   helpText: {
     fontSize: 12,
     color: MUTED,
   },
-
   attCard: {
     background: '#FCFDFE',
     borderRadius: 16,
     padding: 16,
     border: `1px solid ${LINE}`,
   },
-
   attRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -903,7 +868,6 @@ const S = {
     borderBottom: '1px solid #EEF2F7',
     gap: 12,
   },
-
   attLabelWrap: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -912,25 +876,21 @@ const S = {
     color: '#334155',
     fontWeight: 600,
   },
-
   attValue: {
     color: TEXT,
     fontSize: 14,
   },
-
   chartSection: {
     display: 'grid',
     gridTemplateColumns: '0.95fr 1.05fr',
     gap: 12,
     alignItems: 'center',
   },
-
   chartWrap: {
     position: 'relative',
     height: 220,
     minHeight: 220,
   },
-
   chartCenter: {
     position: 'absolute',
     inset: 0,
@@ -940,7 +900,6 @@ const S = {
     justifyContent: 'center',
     pointerEvents: 'none',
   },
-
   chartCenterLabel: {
     fontSize: 12,
     fontWeight: 700,
@@ -948,20 +907,17 @@ const S = {
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
-
   chartCenterValue: {
     fontSize: 28,
     fontWeight: 800,
     lineHeight: 1.1,
     marginTop: 2,
   },
-
   chartLegend: {
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
   },
-
   legendItem: {
     display: 'flex',
     alignItems: 'center',
@@ -970,32 +926,27 @@ const S = {
     padding: '8px 0',
     borderBottom: '1px solid #F1F5F9',
   },
-
   legendLeft: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 8,
   },
-
   legendDot: {
     width: 10,
     height: 10,
     borderRadius: 999,
     flexShrink: 0,
   },
-
   legendLabel: {
     fontSize: 13,
     color: '#334155',
     fontWeight: 600,
   },
-
   metricDivider: {
     height: 1,
     background: '#E5E7EB',
     margin: '4px 0 2px',
   },
-
   emptyChart: {
     height: '100%',
     display: 'flex',
@@ -1007,7 +958,6 @@ const S = {
     fontSize: 13,
     background: '#F8FAFC',
   },
-
   summaryRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1017,7 +967,6 @@ const S = {
     borderBottom: '1px solid #F1F5F9',
     gap: 12,
   },
-
   summaryLeft: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -1025,21 +974,18 @@ const S = {
     color: '#334155',
     fontWeight: 600,
   },
-
   kpiGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(5, 1fr)',
     gap: 14,
     marginBottom: 18,
   },
-
   kpiCard: {
     background: '#fff',
     borderRadius: 18,
     padding: '18px 18px',
     boxShadow: '0 10px 24px rgba(15, 23, 42, 0.04)',
   },
-
   kpiIconWrap: {
     width: 38,
     height: 38,
@@ -1049,14 +995,12 @@ const S = {
     justifyContent: 'center',
     marginBottom: 12,
   },
-
   kpiValue: {
     fontSize: 26,
     fontWeight: 800,
     marginBottom: 4,
     lineHeight: 1.1,
   },
-
   kpiLabel: {
     fontSize: 11,
     color: MUTED,
@@ -1064,7 +1008,6 @@ const S = {
     letterSpacing: '0.06em',
     fontWeight: 700,
   },
-
   card: {
     background: '#fff',
     borderRadius: 20,
@@ -1073,51 +1016,43 @@ const S = {
     boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
     marginBottom: 18,
   },
-
   sectionHead: {
     marginBottom: 16,
   },
-
   sectionTitleRow: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
     marginBottom: 4,
   },
-
   sectionIcon: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   cardTitle: {
     fontSize: 18,
     fontWeight: 700,
     color: TEXT,
     margin: 0,
   },
-
   cardSub: {
     margin: 0,
     fontSize: 13,
     color: MUTED,
     lineHeight: 1.5,
   },
-
   tableWrap: {
     overflowX: 'auto',
     border: `1px solid ${LINE}`,
     borderRadius: 16,
   },
-
   table: {
     width: '100%',
     borderCollapse: 'separate',
     borderSpacing: 0,
     background: '#fff',
   },
-
   th: {
     textAlign: 'left',
     fontSize: 11,
@@ -1129,7 +1064,6 @@ const S = {
     letterSpacing: '.05em',
     fontWeight: 700,
   },
-
   td: {
     fontSize: 13,
     padding: '13px 14px',
@@ -1137,7 +1071,6 @@ const S = {
     color: TEXT,
     verticalAlign: 'middle',
   },
-
   badge: {
     borderRadius: 999,
     padding: '5px 10px',
@@ -1146,34 +1079,29 @@ const S = {
     display: 'inline-flex',
     alignItems: 'center',
   },
-
   bottomGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: 18,
   },
-
   escItem: {
     padding: 14,
     border: `1px solid ${LINE}`,
     borderRadius: 16,
     background: '#FCFDFE',
   },
-
   escTop: {
     display: 'flex',
     justifyContent: 'space-between',
     gap: 12,
     alignItems: 'flex-start',
   },
-
   escText: {
     fontSize: 13,
     color: TEXT,
     lineHeight: 1.5,
     flex: 1,
   },
-
   escMeta: {
     fontSize: 12,
     color: MUTED,
