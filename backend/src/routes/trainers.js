@@ -126,9 +126,10 @@ router.get('/courses', auth, async (req, res) => {
 
 // GET /api/trainers/dashboard
 router.get('/dashboard', auth, async (req, res) => {
-  const trainerId = req.user?.trainer_id;
+  const trainerTableId = req.user?.trainer_id;
+  const userId = req.user?.id;
 
-  if (!trainerId) {
+  if (!trainerTableId || !userId) {
     return res.status(403).json({
       success: false,
       error: 'Trainer profile not found for this user.',
@@ -147,7 +148,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
          AND EXTRACT(MONTH FROM date) = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))
          AND EXTRACT(YEAR FROM date) = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
-      [trainerId]
+      [userId]
     );
 
     const worklog = await pool.query(
@@ -159,7 +160,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
          AND EXTRACT(MONTH FROM log_date) = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))
          AND EXTRACT(YEAR FROM log_date) = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const batches = await pool.query(
@@ -177,7 +178,7 @@ router.get('/dashboard', auth, async (req, res) => {
          AND b.status = 'ongoing'
        GROUP BY b.id
        ORDER BY b.batch_start_date DESC`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const escalations = await pool.query(
@@ -186,7 +187,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
        ORDER BY escalation_date DESC
        LIMIT 5`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const escCount = await pool.query(
@@ -195,7 +196,7 @@ router.get('/dashboard', auth, async (req, res) => {
          COUNT(*) FILTER (WHERE status = 'resolved') AS resolved
        FROM escalations
        WHERE trainer_id = $1`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const placements = await pool.query(
@@ -205,7 +206,7 @@ router.get('/dashboard', auth, async (req, res) => {
        JOIN batch_trainers bt ON bt.batch_id = s.batch_id
        WHERE bt.trainer_id = $1
          AND p.placed_status = 'placed'`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const followups = await pool.query(
@@ -214,7 +215,7 @@ router.get('/dashboard', auth, async (req, res) => {
        JOIN students s ON s.id = sf.student_id
        JOIN batch_trainers bt ON bt.batch_id = s.batch_id
        WHERE bt.trainer_id = $1`,
-      [trainerId]
+      [trainerTableId]
     );
 
     const recentAttendance = await pool.query(
@@ -223,7 +224,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
        ORDER BY date DESC, check_in DESC
        LIMIT 10`,
-      [trainerId]
+      [userId]
     );
 
     res.json({
