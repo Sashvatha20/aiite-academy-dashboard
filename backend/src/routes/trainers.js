@@ -148,7 +148,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
          AND EXTRACT(MONTH FROM date) = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))
          AND EXTRACT(YEAR FROM date) = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
-      [trainerTableId]
+      [userId]
     );
 
     const worklog = await pool.query(
@@ -224,7 +224,7 @@ router.get('/dashboard', auth, async (req, res) => {
        WHERE trainer_id = $1
        ORDER BY date DESC, check_in DESC
        LIMIT 10`,
-      [trainerTableId]
+      [userId]
     );
 
     res.json({
