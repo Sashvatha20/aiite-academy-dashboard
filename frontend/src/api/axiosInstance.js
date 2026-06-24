@@ -8,7 +8,6 @@ const api = axios.create({
   },
 });
 
-// Attach token to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('aiite_token');
@@ -23,13 +22,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle auth errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
+    const url = error?.config?.url || '';
 
-    if (status === 401 || status === 403) {
+    // Only auto-logout for actual auth/session failures.
+    // Do not logout on every 403 because some routes may return 403
+    // for permission issues while the session is still valid.
+    if (status === 401) {
+      localStorage.removeItem('aiite_token');
+      localStorage.removeItem('aiite_user');
+      window.location.href = '/';
+    }
+
+    // Optional: if login itself fails, never clear storage here.
+    if (status === 403 && url.includes('/auth/me')) {
       localStorage.removeItem('aiite_token');
       localStorage.removeItem('aiite_user');
       window.location.href = '/';

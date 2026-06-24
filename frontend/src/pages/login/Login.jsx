@@ -33,7 +33,7 @@ export default function Login() {
 
       login(user, token);
       toast.success(`Welcome, ${user.name}!`);
-      navigate(role === 'admin' ? '/admin' : '/trainer');
+      navigate(role === 'admin' ? '/admin' : '/trainer', { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Login failed');
     } finally {
