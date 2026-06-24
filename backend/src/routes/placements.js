@@ -15,7 +15,11 @@ router.post('/sync', auth, async (req, res) => {
     });
   } catch (err) {
     console.error('POST /placements/sync error:', err);
-    return res.status(500).json({ error: 'Failed to sync placements sheet' });
+    return res.status(500).json({
+      error: 'Failed to sync placements sheet',
+      details: err.message,
+      stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
+    });
   }
 });
 
@@ -128,7 +132,7 @@ router.post('/', auth, async (req, res) => {
     try {
       await syncPlacementsSheet();
     } catch (syncErr) {
-      console.error('Placements auto-sync failed after create:', syncErr.message || syncErr);
+      console.error('Placements auto-sync failed after create:', syncErr);
     }
 
     res.status(201).json({ message: 'Placement logged', placement: result.rows[0] });
@@ -188,7 +192,7 @@ router.put('/:id', auth, async (req, res) => {
     try {
       await syncPlacementsSheet();
     } catch (syncErr) {
-      console.error('Placements auto-sync failed after update:', syncErr.message || syncErr);
+      console.error('Placements auto-sync failed after update:', syncErr);
     }
 
     res.json({ message: 'Placement updated', placement: result.rows[0] });
@@ -215,7 +219,7 @@ router.delete('/:id', auth, async (req, res) => {
     try {
       await syncPlacementsSheet();
     } catch (syncErr) {
-      console.error('Placements auto-sync failed after delete:', syncErr.message || syncErr);
+      console.error('Placements auto-sync failed after delete:', syncErr);
     }
 
     res.json({ message: 'Placement deleted', placement: result.rows[0] });
