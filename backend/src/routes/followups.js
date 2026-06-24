@@ -105,8 +105,6 @@ router.post('/', auth, async (req, res) => {
       no_of_rounds_cleared,
       interested,
       placed_status,
-      resolution_note,
-      wa_sent,
     } = req.body;
 
     if (!student_id) {
@@ -146,11 +144,9 @@ router.post('/', auth, async (req, res) => {
           no_of_interview_calls,
           no_of_rounds_cleared,
           interested,
-          placed_status,
-          resolution_note,
-          wa_sent
+          placed_status
         )
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING *`,
       [
         student_id,
@@ -163,8 +159,6 @@ router.post('/', auth, async (req, res) => {
         toSafeInt(no_of_rounds_cleared, 0),
         toNullableBoolean(interested),
         safePlacedStatus,
-        nullIfEmpty(resolution_note),
-        toNullableBoolean(wa_sent) ?? false,
       ]
     );
 
@@ -194,8 +188,6 @@ router.put('/:id', auth, async (req, res) => {
       no_of_rounds_cleared,
       interested,
       placed_status,
-      resolution_note,
-      wa_sent,
     } = req.body;
 
     const safeCallStatus =
@@ -216,10 +208,8 @@ router.put('/:id', auth, async (req, res) => {
         no_of_rounds_cleared = COALESCE($6, no_of_rounds_cleared),
         interested = COALESCE($7, interested),
         placed_status = COALESCE($8, placed_status),
-        resolution_note = COALESCE($9, resolution_note),
-        wa_sent = COALESCE($10, wa_sent),
         updated_at = NOW()
-       WHERE id = $11
+       WHERE id = $9
        RETURNING *`,
       [
         safeCallStatus,
@@ -236,10 +226,6 @@ router.put('/:id', auth, async (req, res) => {
           ? toNullableBoolean(interested)
           : null,
         safePlacedStatus,
-        nullIfEmpty(resolution_note),
-        wa_sent !== undefined && wa_sent !== ''
-          ? toNullableBoolean(wa_sent)
-          : null,
         req.params.id,
       ]
     );
