@@ -14,7 +14,6 @@ async function syncPlacementsSheet() {
       p.company_name,
       p.role_offered,
       p.placed_as,
-      p.pakage_lpa AS package_lpa,
       p.cooperation_mode,
       p.rounds_cleared,
       p.placed_status,

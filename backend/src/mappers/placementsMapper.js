@@ -21,7 +21,7 @@ function mapPlacementRow(row) {
     row.company_name ?? '',
     row.role_offered ?? '',
     row.placed_as ?? '',
-    row.package_lpa ?? '',
+    '', // package_lpa not present in DB, keep column blank to preserve A:Q layout
     row.cooperation_mode === true ? 'TRUE' : row.cooperation_mode === false ? 'FALSE' : '',
     row.rounds_cleared ?? '',
     row.placed_status ?? '',
