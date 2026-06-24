@@ -18,7 +18,6 @@ async function syncPlacementsSheet() {
       p.rounds_cleared,
       p.placed_status,
       p.placed_date,
-      p.notes,
       p.created_at,
       p.updated_at
     FROM placements p
