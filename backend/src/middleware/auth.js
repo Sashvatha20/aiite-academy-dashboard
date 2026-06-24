@@ -23,6 +23,7 @@ module.exports = async function auth(req, res, next) {
       username: decoded.username || null,
       role: decoded.role || null,
       name: decoded.name || decoded.username || 'You',
+      trainerId: decoded.trainerId || null,
     };
 
     if (req.user.role === 'trainer') {
@@ -34,8 +35,8 @@ module.exports = async function auth(req, res, next) {
         [req.user.id]
       );
 
-      req.user.trainer_id = trainerRes.rows[0]?.id || null;
-      req.user.trainer_name = trainerRes.rows[0]?.name || null;
+      req.user.trainerId = trainerRes.rows[0]?.id || req.user.trainerId || null;
+      req.user.trainerName = trainerRes.rows[0]?.name || null;
     }
 
     return next();
