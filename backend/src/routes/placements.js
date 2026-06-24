@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 const { syncPlacementsSheet } = require('../services/syncPlacementsSheet');
 
 // POST /api/placements/sync
-// Keep this static route before any future dynamic routes like /:id
+// Keep this static route before any dynamic routes like /:id
 router.post('/sync', auth, async (req, res) => {
   try {
     const result = await syncPlacementsSheet();
@@ -75,7 +75,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST /api/placements — log placement
+// POST /api/placements
 router.post('/', auth, async (req, res) => {
   try {
     const {
@@ -135,7 +135,10 @@ router.post('/', auth, async (req, res) => {
       console.error('Placements auto-sync failed after create:', syncErr);
     }
 
-    res.status(201).json({ message: 'Placement logged', placement: result.rows[0] });
+    res.status(201).json({
+      message: 'Placement logged',
+      placement: result.rows[0],
+    });
   } catch (err) {
     console.error('POST /placements error:', err);
     res.status(500).json({ error: err.message || 'Failed to log placement' });
@@ -195,7 +198,10 @@ router.put('/:id', auth, async (req, res) => {
       console.error('Placements auto-sync failed after update:', syncErr);
     }
 
-    res.json({ message: 'Placement updated', placement: result.rows[0] });
+    res.json({
+      message: 'Placement updated',
+      placement: result.rows[0],
+    });
   } catch (err) {
     console.error('PUT /placements/:id error:', err);
     res.status(500).json({ error: err.message || 'Failed to update placement' });
@@ -222,7 +228,10 @@ router.delete('/:id', auth, async (req, res) => {
       console.error('Placements auto-sync failed after delete:', syncErr);
     }
 
-    res.json({ message: 'Placement deleted', placement: result.rows[0] });
+    res.json({
+      message: 'Placement deleted',
+      placement: result.rows[0],
+    });
   } catch (err) {
     console.error('DELETE /placements/:id error:', err);
     res.status(500).json({ error: err.message || 'Failed to delete placement' });

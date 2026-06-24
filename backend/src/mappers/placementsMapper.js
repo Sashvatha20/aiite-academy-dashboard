@@ -21,12 +21,12 @@ function mapPlacementRow(row) {
     row.company_name ?? '',
     row.role_offered ?? '',
     row.placed_as ?? '',
-    '', // package_lpa not present in DB
+    row.package_lpa ?? '',
     row.cooperation_mode === true ? 'TRUE' : row.cooperation_mode === false ? 'FALSE' : '',
     row.rounds_cleared ?? '',
     row.placed_status ?? '',
     formatDateOnly(row.placed_date),
-    '', // notes not present in placements table
+    row.notes ?? '',
     formatDateTime(row.created_at),
     formatDateTime(row.updated_at),
   ];

@@ -14,10 +14,12 @@ async function syncPlacementsSheet() {
       p.company_name,
       p.role_offered,
       p.placed_as,
+      p.package_lpa,
       p.cooperation_mode,
       p.rounds_cleared,
       p.placed_status,
       p.placed_date,
+      p.notes,
       p.created_at,
       p.updated_at
     FROM placements p
