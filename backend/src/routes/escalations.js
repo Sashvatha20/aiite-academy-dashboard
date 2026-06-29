@@ -66,7 +66,6 @@ router.post('/', auth, async (req, res) => {
       description,
       no_of_count,
       status,
-      wa_sent,
       resolution_note,
     } = req.body;
 
@@ -83,8 +82,8 @@ router.post('/', auth, async (req, res) => {
     const result = await pool.query(
       `
         INSERT INTO escalations
-          (escalation_date, trainer_id, reported_by, description, no_of_count, status, wa_sent, resolution_note)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          (escalation_date, trainer_id, reported_by, description, no_of_count, status, resolution_note)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
       `,
       [
@@ -94,7 +93,6 @@ router.post('/', auth, async (req, res) => {
         String(description).trim(),
         Number(no_of_count) || 1,
         finalStatus,
-        Boolean(wa_sent) || false,
         normalizeResolutionNote(resolution_note),
       ]
     );
@@ -124,7 +122,6 @@ router.put('/:id', auth, async (req, res) => {
       description,
       no_of_count,
       status,
-      wa_sent,
       resolution_note,
     } = req.body;
 
@@ -153,10 +150,9 @@ router.put('/:id', auth, async (req, res) => {
           description = $3,
           no_of_count = $4,
           status = $5,
-          wa_sent = $6,
-          resolution_note = $7,
+          resolution_note = $6,
           updated_at = NOW()
-        WHERE id = $8
+        WHERE id = $7
         RETURNING *
       `,
       [
@@ -165,7 +161,6 @@ router.put('/:id', auth, async (req, res) => {
         String(description).trim(),
         Number(no_of_count) || 1,
         status,
-        Boolean(wa_sent) || false,
         normalizeResolutionNote(resolution_note),
         id,
       ]
