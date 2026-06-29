@@ -65,7 +65,7 @@ async function syncEscalationsSheet() {
       e.escalation_date,
       e.no_of_count,
       e.status,
-      '' AS resolution_note,
+      e.resolution_note,
       e.created_at,
       e.updated_at
     FROM escalations e

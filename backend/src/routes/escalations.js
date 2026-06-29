@@ -13,6 +13,15 @@ function isUUID(value) {
   );
 }
 
+function toDateOnly(value) {
+  if (!value) return new Date().toISOString().split('T')[0];
+  try {
+    return new Date(value).toISOString().split('T')[0];
+  } catch {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
 router.get('/', auth, async (req, res) => {
   try {
     const { status, trainer_id, month, year } = req.query;
@@ -80,7 +89,7 @@ router.post('/', auth, async (req, res) => {
         RETURNING *
       `,
       [
-        escalation_date || new Date(),
+        toDateOnly(escalation_date),
         trainer_id,
         req.user?.name || 'You',
         String(description).trim(),
@@ -146,7 +155,7 @@ router.put('/:id', auth, async (req, res) => {
         RETURNING *
       `,
       [
-        escalation_date || new Date(),
+        toDateOnly(escalation_date),
         trainer_id,
         String(description).trim(),
         Number(no_of_count) || 1,
