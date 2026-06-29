@@ -145,7 +145,7 @@ router.post('/', auth, async (req, res) => {
             bisleri_price
           )
         VALUES ($1, $2, $3, $4, $5, $6::payment_status, $7, $8, $9)
-        ON CONFLICT ON CONSTRAINT water_can_details_date_unique
+        ON CONFLICT (date)
         DO UPDATE SET
           no_of_ro_water = water_can_details.no_of_ro_water + EXCLUDED.no_of_ro_water,
           no_of_bisleri_water = water_can_details.no_of_bisleri_water + EXCLUDED.no_of_bisleri_water,
