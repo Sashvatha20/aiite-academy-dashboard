@@ -248,7 +248,6 @@ export default function AdminStudents() {
       api.get(`/student-followups?studentid=${studentId}`),
       api.get(`/students/${studentId}`),
     ]);
-
     setPayments(p.data.payments || []);
     setFollowups(f.data.followups || []);
     if (one.data.student) setDetail(one.data.student);
@@ -258,7 +257,6 @@ export default function AdminStudents() {
     try {
       setSyncingSheet(true);
       const res = await syncStudentsSheet();
-
       if (res?.data?.success || res?.data?.message) {
         toast.success(
           res?.data?.message ||
@@ -341,12 +339,15 @@ export default function AdminStudents() {
         resolution_note: null,
       };
 
+      console.log('student payload', payload);
+
       await api.post('/students', payload);
       toast.success(`${form.candidatename} enrolled!`);
       setShowAdd(false);
       resetAddForm();
       load();
     } catch (e) {
+      console.error('create student error', e?.response?.data || e);
       toast.error(e?.response?.data?.error || 'Failed to add student');
     } finally {
       setSaving(false);
@@ -441,7 +442,6 @@ export default function AdminStudents() {
 
   const paymentsWithBalance = useMemo(() => {
     if (!detail?.total_fee || payments.length === 0) return payments;
-
     const totalFeeNum = parseFloat(detail.total_fee || 0);
     let cumulativePaid = 0;
 
@@ -454,7 +454,6 @@ export default function AdminStudents() {
       .map((p, index) => {
         cumulativePaid += parseFloat(p.amount || 0);
         const remaining = Math.max(0, totalFeeNum - cumulativePaid);
-
         return {
           ...p,
           cumulative_paid: cumulativePaid,
@@ -531,9 +530,7 @@ export default function AdminStudents() {
             { label: 'Pending', value: `${(pendingFee / 1000).toFixed(1)}K`, color: '#DC2626', bg: '#FEF2F2' },
           ].map((k, i) => (
             <div key={i} style={{ background: k.bg, borderRadius: 10, padding: '12px 14px' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: k.color, lineHeight: 1 }}>
-                {k.value}
-              </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: k.color, lineHeight: 1 }}>{k.value}</div>
               <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>{k.label}</div>
             </div>
           ))}
@@ -580,9 +577,7 @@ export default function AdminStudents() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 50, color: '#aaa', fontSize: 13 }}>
-            Loading...
-          </div>
+          <div style={{ textAlign: 'center', padding: 50, color: '#aaa', fontSize: 13 }}>Loading...</div>
         ) : paginated.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 50, color: '#bbb', fontSize: 13 }}>
             {students.length === 0 ? 'No students yet — enroll one!' : 'No students match your search'}
@@ -667,15 +662,7 @@ export default function AdminStudents() {
 
                       <td style={S.td}>
                         {s.batch_name ? (
-                          <span
-                            style={{
-                              background: '#EFF6FF',
-                              color: '#185FA5',
-                              fontSize: 10,
-                              padding: '2px 8px',
-                              borderRadius: 8,
-                            }}
-                          >
+                          <span style={{ background: '#EFF6FF', color: '#185FA5', fontSize: 10, padding: '2px 8px', borderRadius: 8 }}>
                             {s.batch_name}
                           </span>
                         ) : (
@@ -686,25 +673,14 @@ export default function AdminStudents() {
                       <td style={S.td}>{fmtMoney(total)}</td>
 
                       <td style={S.td}>
-                        <span
-                          style={{
-                            background: fc.bg,
-                            color: fc.color,
-                            fontSize: 11,
-                            padding: '2px 10px',
-                            borderRadius: 20,
-                            fontWeight: 600,
-                          }}
-                        >
+                        <span style={{ background: fc.bg, color: fc.color, fontSize: 11, padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
                           {fmtMoney(paid)}
                         </span>
                       </td>
 
                       <td style={S.td}>
                         {balance > 0 ? (
-                          <span style={{ color: '#DC2626', fontWeight: 700 }}>
-                            {fmtMoney(balance)}
-                          </span>
+                          <span style={{ color: '#DC2626', fontWeight: 700 }}>{fmtMoney(balance)}</span>
                         ) : (
                           <span style={{ color: G, fontWeight: 700 }}>Clear</span>
                         )}
@@ -743,14 +719,7 @@ export default function AdminStudents() {
                         <button
                           type="button"
                           onClick={() => openDetail(s)}
-                          style={{
-                            fontSize: 10,
-                            padding: '5px 10px',
-                            borderRadius: 6,
-                            border: '1px solid #ddd',
-                            background: '#fff',
-                            cursor: 'pointer',
-                          }}
+                          style={{ fontSize: 10, padding: '5px 10px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}
                         >
                           View
                         </button>
@@ -808,12 +777,8 @@ export default function AdminStudents() {
       {showAdd && (
         <div style={S.modal} onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}>
           <div style={S.modalBox}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: G, marginBottom: 4 }}>
-              Enroll New Student
-            </div>
-            <div style={{ fontSize: 11, color: '#888', marginBottom: 20 }}>
-              Add a new student to the system
-            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: G, marginBottom: 4 }}>Enroll New Student</div>
+            <div style={{ fontSize: 11, color: '#888', marginBottom: 20 }}>Add a new student to the system</div>
 
             <div style={S.row2}>
               <div style={S.field}>
@@ -826,7 +791,6 @@ export default function AdminStudents() {
                   autoFocus
                 />
               </div>
-
               <div style={S.field}>
                 <label style={S.label}>Phone *</label>
                 <input
@@ -849,7 +813,6 @@ export default function AdminStudents() {
                   placeholder="email@example.com"
                 />
               </div>
-
               <div style={S.field}>
                 <label style={S.label}>Join Date</label>
                 <input
@@ -909,7 +872,6 @@ export default function AdminStudents() {
                   placeholder="e.g. 25000"
                 />
               </div>
-
               <div style={S.field}>
                 <label style={S.label}>Initial Payment</label>
                 <input
@@ -937,14 +899,7 @@ export default function AdminStudents() {
       {detail && (
         <div style={S.panel} onClick={(e) => e.target === e.currentTarget && setDetail(null)}>
           <div style={S.panelBox}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: 16,
-              }}
-            >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div
                   style={{
@@ -963,11 +918,8 @@ export default function AdminStudents() {
                 >
                   {detail.candidate_name?.[0]?.toUpperCase() || '?'}
                 </div>
-
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>
-                    {detail.candidate_name}
-                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>{detail.candidate_name}</div>
                   <div style={{ fontSize: 11, color: '#888' }}>
                     {detail.phone} • {detail.email || 'No email'}
                   </div>
@@ -977,28 +929,13 @@ export default function AdminStudents() {
               <button
                 type="button"
                 onClick={() => setDetail(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 20,
-                  color: '#aaa',
-                  cursor: 'pointer',
-                }}
+                style={{ background: 'none', border: 'none', fontSize: 20, color: '#aaa', cursor: 'pointer' }}
               >
                 ×
               </button>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                gap: 4,
-                marginBottom: 16,
-                background: '#f5f5f5',
-                borderRadius: 10,
-                padding: 4,
-              }}
-            >
+            <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f5f5f5', borderRadius: 10, padding: 4 }}>
               {[
                 { key: 'overview', label: 'Overview' },
                 { key: 'payments', label: `Payments (${payments.length})` },
@@ -1038,42 +975,22 @@ export default function AdminStudents() {
                     { label: 'Paid', value: fmtMoney(detail.paid_amount) },
                   ].map((r, i) => (
                     <div key={i} style={{ background: '#f9f9f9', borderRadius: 8, padding: '10px 12px' }}>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          color: '#aaa',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.04em',
-                          marginBottom: 3,
-                        }}
-                      >
+                      <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>
                         {r.label}
                       </div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>
-                        {r.value || '—'}
-                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>{r.value || '—'}</div>
                     </div>
                   ))}
                 </div>
 
                 {toNum(detail.total_fee) > 0 && (
                   <div style={{ background: '#f9f9f9', borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        marginBottom: 6,
-                      }}
-                    >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 600, marginBottom: 6 }}>
                       <span>Fee Progress</span>
                       <span style={{ color: currentStudentBalance === 0 ? G : '#D97706' }}>
                         {Math.min(100, (toNum(detail.paid_amount) / toNum(detail.total_fee)) * 100).toFixed(0)}% paid
                       </span>
                     </div>
-
                     <div style={{ height: 8, background: '#e5e5e5', borderRadius: 4, overflow: 'hidden' }}>
                       <div
                         style={{
@@ -1090,16 +1007,7 @@ export default function AdminStudents() {
                         }}
                       />
                     </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: 10,
-                        color: '#aaa',
-                        marginTop: 4,
-                      }}
-                    >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#aaa', marginTop: 4 }}>
                       <span>Paid {fmtMoney(detail.paid_amount)}</span>
                       <span>Balance {fmtMoney(currentStudentBalance)}</span>
                     </div>
@@ -1107,12 +1015,8 @@ export default function AdminStudents() {
                 )}
 
                 <div style={{ background: '#FCFCFC', border: '1px solid #eee', borderRadius: 10, padding: 12 }}>
-                  <div style={{ fontSize: 11, color: '#666', marginBottom: 4, fontWeight: 700 }}>
-                    Recent follow-up
-                  </div>
-                  <div style={{ fontSize: 12, color: '#333' }}>
-                    {followups[0]?.remarks || 'No follow-up yet'}
-                  </div>
+                  <div style={{ fontSize: 11, color: '#666', marginBottom: 4, fontWeight: 700 }}>Recent follow-up</div>
+                  <div style={{ fontSize: 12, color: '#333' }}>{followups[0]?.remarks || 'No follow-up yet'}</div>
                   {followups[0] && (
                     <div style={{ marginTop: 4, fontSize: 10, color: '#999' }}>
                       {fmtDate(followups[0].lastcontactdate || followups[0].createdat)}
@@ -1124,27 +1028,11 @@ export default function AdminStudents() {
 
             {activeTab === 'payments' && (
               <>
-                <div
-                  style={{
-                    background: '#f0faf5',
-                    borderRadius: 10,
-                    padding: 14,
-                    marginBottom: 14,
-                    border: '1px solid #1D9E7533',
-                  }}
-                >
-                  <div style={{ fontSize: 11, fontWeight: 700, color: G, marginBottom: 10 }}>
-                    Record Payment
-                  </div>
-
+                <div style={{ background: '#f0faf5', borderRadius: 10, padding: 14, marginBottom: 14, border: '1px solid #1D9E7533' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: G, marginBottom: 10 }}>Record Payment</div>
                   <div style={{ fontSize: 11, color: '#666', marginBottom: 10 }}>
                     Remaining balance:{' '}
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        color: currentStudentBalance === 0 ? G : '#DC2626',
-                      }}
-                    >
+                    <span style={{ fontWeight: 700, color: currentStudentBalance === 0 ? G : '#DC2626' }}>
                       {fmtMoney(currentStudentBalance)}
                     </span>
                   </div>
@@ -1160,7 +1048,6 @@ export default function AdminStudents() {
                         placeholder="e.g. 5000"
                       />
                     </div>
-
                     <div>
                       <label style={S.label}>Date</label>
                       <input
@@ -1182,38 +1069,21 @@ export default function AdminStudents() {
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    style={{ ...S.btnP, fontSize: 11 }}
-                    onClick={handlePayment}
-                    disabled={payLoading}
-                  >
+                  <button type="button" style={{ ...S.btnP, fontSize: 11 }} onClick={handlePayment} disabled={payLoading}>
                     {payLoading ? 'Saving...' : 'Add Payment'}
                   </button>
                 </div>
 
                 {paymentsWithBalance.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 30, color: '#bbb', fontSize: 12 }}>
-                    No payments yet
-                  </div>
+                  <div style={{ textAlign: 'center', padding: 30, color: '#bbb', fontSize: 12 }}>No payments yet</div>
                 ) : (
                   <div style={{ background: '#f9f9f9', borderRadius: 12, padding: 16, border: '1px solid #e5e5e5' }}>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: '#111',
-                        marginBottom: 12,
-                        paddingBottom: 8,
-                        borderBottom: '1px solid #e0e0e0',
-                      }}
-                    >
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#111', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #e0e0e0' }}>
                       Payment History • Total Fee {fmtMoney(detail.total_fee)}
                     </div>
 
                     {paymentsWithBalance.map((p, i) => {
                       const balanceColor = p.remaining_balance === 0 ? G : '#DC2626';
-
                       return (
                         <div
                           key={p.id || i}
@@ -1228,17 +1098,12 @@ export default function AdminStudents() {
                           }}
                         >
                           <div>
-                            <div style={{ fontWeight: 700, color: G, fontSize: 12 }}>
-                              {fmtMoney(p.amount)}
-                            </div>
+                            <div style={{ fontWeight: 700, color: G, fontSize: 12 }}>{fmtMoney(p.amount)}</div>
                             <div style={{ color: '#666', marginTop: 2 }}>{p.notes}</div>
                           </div>
-
                           <div>{fmtDate(p.payment_date || p.created_at)}</div>
                           <div>Cumulative: {fmtMoney(p.cumulative_paid)}</div>
-                          <div style={{ color: balanceColor, fontWeight: 700 }}>
-                            {fmtMoney(p.remaining_balance)}
-                          </div>
+                          <div style={{ color: balanceColor, fontWeight: 700 }}>{fmtMoney(p.remaining_balance)}</div>
                           <div>#{p.order}</div>
                         </div>
                       );
@@ -1250,18 +1115,8 @@ export default function AdminStudents() {
 
             {activeTab === 'followups' && (
               <>
-                <div
-                  style={{
-                    background: '#FCFCFC',
-                    border: '1px solid #eee',
-                    borderRadius: 10,
-                    padding: 14,
-                    marginBottom: 14,
-                  }}
-                >
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#111', marginBottom: 10 }}>
-                    Add Follow-up
-                  </div>
+                <div style={{ background: '#FCFCFC', border: '1px solid #eee', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#111', marginBottom: 10 }}>Add Follow-up</div>
 
                   <div style={S.row2}>
                     <div>
@@ -1274,57 +1129,31 @@ export default function AdminStudents() {
                         <option value="placement">Placement</option>
                       </select>
                     </div>
-
                     <div>
                       <label style={S.label}>Date</label>
-                      <input
-                        style={S.inputFull}
-                        type="date"
-                        value={fuDate}
-                        onChange={(e) => setFuDate(e.target.value)}
-                      />
+                      <input style={S.inputFull} type="date" value={fuDate} onChange={(e) => setFuDate(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={S.row2}>
                     <div>
                       <label style={S.label}>Call Status</label>
-                      <input
-                        style={S.inputFull}
-                        value={fuCallStatus}
-                        onChange={(e) => setFuCallStatus(e.target.value)}
-                      />
+                      <input style={S.inputFull} value={fuCallStatus} onChange={(e) => setFuCallStatus(e.target.value)} />
                     </div>
-
                     <div>
                       <label style={S.label}>Resume Status</label>
-                      <input
-                        style={S.inputFull}
-                        value={fuResumeStatus}
-                        onChange={(e) => setFuResumeStatus(e.target.value)}
-                      />
+                      <input style={S.inputFull} value={fuResumeStatus} onChange={(e) => setFuResumeStatus(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={S.row2}>
                     <div>
                       <label style={S.label}>Interview Calls</label>
-                      <input
-                        style={S.inputFull}
-                        type="number"
-                        value={fuInterviewCalls}
-                        onChange={(e) => setFuInterviewCalls(e.target.value)}
-                      />
+                      <input style={S.inputFull} type="number" value={fuInterviewCalls} onChange={(e) => setFuInterviewCalls(e.target.value)} />
                     </div>
-
                     <div>
                       <label style={S.label}>Rounds Cleared</label>
-                      <input
-                        style={S.inputFull}
-                        type="number"
-                        value={fuRoundsCleared}
-                        onChange={(e) => setFuRoundsCleared(e.target.value)}
-                      />
+                      <input style={S.inputFull} type="number" value={fuRoundsCleared} onChange={(e) => setFuRoundsCleared(e.target.value)} />
                     </div>
                   </div>
 
@@ -1337,58 +1166,30 @@ export default function AdminStudents() {
                         <option value="false">No</option>
                       </select>
                     </div>
-
                     <div>
                       <label style={S.label}>Placed Status</label>
-                      <input
-                        style={S.inputFull}
-                        value={fuPlacedStatus}
-                        onChange={(e) => setFuPlacedStatus(e.target.value)}
-                      />
+                      <input style={S.inputFull} value={fuPlacedStatus} onChange={(e) => setFuPlacedStatus(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={{ marginBottom: 8 }}>
                     <label style={S.label}>Remarks</label>
-                    <textarea
-                      style={S.textarea}
-                      value={fuNote}
-                      onChange={(e) => setFuNote(e.target.value)}
-                    />
+                    <textarea style={S.textarea} value={fuNote} onChange={(e) => setFuNote(e.target.value)} />
                   </div>
 
-                  <button
-                    type="button"
-                    style={{ ...S.btnP, fontSize: 11 }}
-                    onClick={handleFollowup}
-                    disabled={fuLoading}
-                  >
+                  <button type="button" style={{ ...S.btnP, fontSize: 11 }} onClick={handleFollowup} disabled={fuLoading}>
                     {fuLoading ? 'Saving...' : 'Add Follow-up'}
                   </button>
                 </div>
 
                 {followups.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 30, color: '#bbb', fontSize: 12 }}>
-                    No follow-ups yet
-                  </div>
+                  <div style={{ textAlign: 'center', padding: 30, color: '#bbb', fontSize: 12 }}>No follow-ups yet</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {followups.map((f) => (
-                      <div
-                        key={f.id}
-                        style={{
-                          border: '1px solid #eee',
-                          borderRadius: 10,
-                          padding: 12,
-                          background: '#fcfcfc',
-                        }}
-                      >
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>
-                          {f.followuptype || 'Follow-up'}
-                        </div>
-                        <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>
-                          {fmtDate(f.lastcontactdate || f.createdat)}
-                        </div>
+                      <div key={f.id} style={{ border: '1px solid #eee', borderRadius: 10, padding: 12, background: '#fcfcfc' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>{f.followuptype || 'Follow-up'}</div>
+                        <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>{fmtDate(f.lastcontactdate || f.createdat)}</div>
                         <div style={{ marginTop: 8, fontSize: 11, color: '#444' }}>{f.remarks}</div>
                       </div>
                     ))}
