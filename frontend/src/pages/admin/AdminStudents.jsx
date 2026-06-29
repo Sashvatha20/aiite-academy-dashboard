@@ -4,11 +4,20 @@ import { syncStudentsSheet } from '../../api/sheetsSync';
 import toast from 'react-hot-toast';
 
 const G = '#1D9E75';
-const PAGE_SIZE = 15;
+const PAGESIZE = 15;
 
 const S = {
-  card: { background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: 12 },
+  card: {
+    background: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: 12,
+  },
   th: {
     textAlign: 'left',
     padding: '9px 12px',
@@ -19,20 +28,122 @@ const S = {
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
   },
-  td: { padding: '10px 12px', borderBottom: '1px solid #f5f5f5', color: '#333', verticalAlign: 'middle' },
-  input: { padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: 8, fontSize: 12, outline: 'none', background: '#fff' },
-  inputFull: { width: '100%', padding: '8px 11px', border: '1px solid #ddd', borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' },
-  select: { width: '100%', padding: '8px 11px', border: '1px solid #ddd', borderRadius: 8, fontSize: 12, outline: 'none', background: '#fff', boxSizing: 'border-box' },
-  textarea: { width: '100%', padding: '10px 11px', border: '1px solid #ddd', borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', minHeight: 80, fontFamily: 'inherit' },
-  label: { fontSize: 11, color: '#666', display: 'block', marginBottom: 4, fontWeight: 500 },
-  row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 },
-  field: { marginBottom: 12 },
-  btnP: { padding: '9px 20px', borderRadius: 9, border: 'none', background: G, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
-  btnS: { padding: '9px 16px', borderRadius: 9, border: '1px solid #ddd', background: '#fff', fontSize: 12, cursor: 'pointer' },
-  modal: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modalBox: { background: '#fff', borderRadius: 16, padding: 28, width: 620, maxWidth: '95vw', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
-  panel: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', zIndex: 1000 },
-  panelBox: { background: '#fff', width: 520, maxWidth: '96vw', height: '100vh', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.15)', padding: 28 },
+  td: {
+    padding: '10px 12px',
+    borderBottom: '1px solid #f5f5f5',
+    color: '#333',
+    verticalAlign: 'middle',
+  },
+  input: {
+    padding: '8px 12px',
+    border: '1px solid #e0e0e0',
+    borderRadius: 8,
+    fontSize: 12,
+    outline: 'none',
+    background: '#fff',
+  },
+  inputFull: {
+    width: '100%',
+    padding: '8px 11px',
+    border: '1px solid #ddd',
+    borderRadius: 8,
+    fontSize: 12,
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  select: {
+    width: '100%',
+    padding: '8px 11px',
+    border: '1px solid #ddd',
+    borderRadius: 8,
+    fontSize: 12,
+    outline: 'none',
+    background: '#fff',
+    boxSizing: 'border-box',
+  },
+  textarea: {
+    width: '100%',
+    padding: '10px 11px',
+    border: '1px solid #ddd',
+    borderRadius: 8,
+    fontSize: 12,
+    outline: 'none',
+    boxSizing: 'border-box',
+    resize: 'vertical',
+    minHeight: 80,
+    fontFamily: 'inherit',
+  },
+  label: {
+    fontSize: 11,
+    color: '#666',
+    display: 'block',
+    marginBottom: 4,
+    fontWeight: 500,
+  },
+  row2: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 12,
+    marginBottom: 12,
+  },
+  field: {
+    marginBottom: 12,
+  },
+  btnP: {
+    padding: '9px 20px',
+    borderRadius: 9,
+    border: 'none',
+    background: G,
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  btnS: {
+    padding: '9px 16px',
+    borderRadius: 9,
+    border: '1px solid #ddd',
+    background: '#fff',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  modal: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.45)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalBox: {
+    background: '#fff',
+    borderRadius: 16,
+    padding: 28,
+    width: 620,
+    maxWidth: '95vw',
+    maxHeight: '92vh',
+    overflowY: 'auto',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  },
+  panel: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 1000,
+  },
+  panelBox: {
+    background: '#fff',
+    width: 520,
+    maxWidth: '96vw',
+    height: '100vh',
+    overflowY: 'auto',
+    boxShadow: '-8px 0 40px rgba(0,0,0,0.15)',
+    padding: 28,
+  },
 };
 
 const feeColor = (paid, total) => {
@@ -44,23 +155,21 @@ const feeColor = (paid, total) => {
 };
 
 const BLANK = {
-  candidate_name: '',
+  candidatename: '',
   phone: '',
   email: '',
-  course_id: '',
-  batch_id: '',
-  total_fee: '',
-  paid_amount: '',
-  join_date: new Date().toISOString().split('T')[0],
+  courseid: '',
+  batchid: '',
+  totalfee: '',
+  paidamount: '',
+  joindate: new Date().toISOString().split('T')[0],
 };
 
-const toNum = v => parseFloat(v || 0);
-const fmtMoney = n => `₹${Number(n || 0).toLocaleString()}`;
-
-const fmtDate = v => {
-  if (!v) return '—';
-  const d = String(v).split('T')[0];
-  return d || '—';
+const toNum = (v) => parseFloat(v || 0);
+const fmtMoney = (n) => Number(n || 0).toLocaleString();
+const fmtDate = (v) => {
+  if (!v) return '';
+  return String(v).split('T')[0];
 };
 
 export default function AdminStudents() {
@@ -99,16 +208,14 @@ export default function AdminStudents() {
   const [fuDate, setFuDate] = useState(new Date().toISOString().split('T')[0]);
   const [fuLoading, setFuLoading] = useState(false);
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const resetAddForm = () => setForm(BLANK);
-
   const resetPaymentForm = () => {
     setPayAmt('');
     setPayNote('');
     setPayDate(new Date().toISOString().split('T')[0]);
   };
-
   const resetFollowupForm = () => {
     setFuType('general');
     setFuCallStatus('');
@@ -133,15 +240,23 @@ export default function AdminStudents() {
     }
   };
 
+  const refreshDetail = async (studentId) => {
+    const [p, f, one] = await Promise.all([
+      api.get(`/students/${studentId}/payments`),
+      api.get(`/student-followups?studentid=${studentId}`),
+      api.get(`/students/${studentId}`),
+    ]);
+    setPayments(p.data.payments || []);
+    setFollowups(f.data.followups || []);
+    if (one.data.student) setDetail(one.data.student);
+  };
+
   const handleSyncStudentsSheet = async () => {
     try {
       setSyncingSheet(true);
       const res = await syncStudentsSheet();
-
       if (res?.data?.success || res?.data?.message) {
-        toast.success(
-          res?.data?.message || `Students sheet synced successfully (${res?.data?.count || 0} rows)`
-        );
+        toast.success(res?.data?.message || `Students sheet synced successfully (${res?.data?.count || 0} rows)`);
       } else {
         toast.error(res?.data?.error || 'Students sheet sync failed');
       }
@@ -152,31 +267,19 @@ export default function AdminStudents() {
     }
   };
 
-  const refreshDetail = async studentId => {
-    const [p, f, one] = await Promise.all([
-      api.get(`/students/${studentId}/payments`),
-      api.get(`/student-followups?student_id=${studentId}`),
-      api.get(`/students/${studentId}`),
-    ]);
-
-    setPayments(p.data.payments || []);
-    setFollowups(f.data.followups || []);
-    if (one.data.student) setDetail(one.data.student);
-  };
-
   useEffect(() => {
     load();
 
     api.get('/batches')
-      .then(r => setBatches(r.data.batches || []))
+      .then((r) => setBatches(r.data.batches || []))
       .catch(() => setBatches([]));
 
     api.get('/trainers/courses')
-      .then(r => setCourses(r.data.courses || []))
+      .then((r) => setCourses(r.data.courses || []))
       .catch(() => setCourses([]));
   }, []);
 
-  const openDetail = async s => {
+  const openDetail = async (s) => {
     setDetail(s);
     setActiveTab('overview');
     setPayments([]);
@@ -192,11 +295,11 @@ export default function AdminStudents() {
   };
 
   const handleCreate = async () => {
-    if (!form.candidate_name.trim()) return toast.error('Name is required');
+    if (!form.candidatename.trim()) return toast.error('Name is required');
     if (!form.phone.trim()) return toast.error('Phone is required');
 
-    const totalFee = form.total_fee ? parseFloat(form.total_fee) : 0;
-    const initialPayment = form.paid_amount ? parseFloat(form.paid_amount) : 0;
+    const totalFee = form.totalfee ? parseFloat(form.totalfee) : 0;
+    const initialPayment = form.paidamount ? parseFloat(form.paidamount) : 0;
 
     if (Number.isNaN(totalFee) || totalFee < 0) return toast.error('Enter valid total fee');
     if (Number.isNaN(initialPayment) || initialPayment < 0) return toast.error('Enter valid initial payment');
@@ -205,23 +308,23 @@ export default function AdminStudents() {
     setSaving(true);
     try {
       const payload = {
-        candidate_name: form.candidate_name.trim(),
+        candidatename: form.candidatename.trim(),
         phone: form.phone.trim(),
         email: form.email.trim() || null,
-        batch_id: form.batch_id || null,
-        total_fee: totalFee,
-        initial_payment: initialPayment,
-        joined_date: form.join_date || null,
+        batchid: form.batchid || null,
+        totalfee: totalFee,
+        initialpayment: initialPayment,
+        joineddate: form.joindate || null,
         status: 'active',
       };
 
       await api.post('/students', payload);
-      toast.success(`${form.candidate_name} enrolled! 🎓`);
+      toast.success(`${form.candidatename} enrolled!`);
       setShowAdd(false);
       resetAddForm();
       load();
     } catch (e) {
-      toast.error(e.response?.data?.error || 'Failed to add student');
+      toast.error(e?.response?.data?.error || 'Failed to add student');
     } finally {
       setSaving(false);
     }
@@ -232,9 +335,9 @@ export default function AdminStudents() {
     if (!payAmt || parseFloat(payAmt) <= 0) return toast.error('Enter valid amount');
 
     const amount = parseFloat(payAmt);
-    const currentBalance = Math.max(toNum(detail.total_fee) - toNum(detail.paid_amount), 0);
+    const currentBalance = Math.max(toNum(detail.totalfee) - toNum(detail.paidamount), 0);
 
-    if (toNum(detail.total_fee) > 0 && amount > currentBalance) {
+    if (toNum(detail.totalfee) > 0 && amount > currentBalance) {
       return toast.error(`Payment exceeds balance of ${fmtMoney(currentBalance)}`);
     }
 
@@ -242,16 +345,15 @@ export default function AdminStudents() {
     try {
       await api.post(`/students/${detail.id}/payments`, {
         amount,
-        payment_date: payDate,
+        paymentdate: payDate,
         notes: payNote.trim() || null,
       });
-
-      toast.success(`${fmtMoney(amount)} payment recorded! 💰`);
+      toast.success(`${fmtMoney(amount)} payment recorded!`);
       resetPaymentForm();
       await refreshDetail(detail.id);
       load();
     } catch (e) {
-      toast.error(e.response?.data?.error || 'Payment failed');
+      toast.error(e?.response?.data?.error || 'Payment failed');
     } finally {
       setPayLoading(false);
     }
@@ -264,82 +366,83 @@ export default function AdminStudents() {
     setFuLoading(true);
     try {
       await api.post('/student-followups', {
-        student_id: detail.id,
-        followup_type: fuType || 'general',
-        call_status: fuCallStatus || null,
-        last_contact_date: fuDate || null,
+        studentid: detail.id,
+        followuptype: fuType || 'general',
+        callstatus: fuCallStatus || null,
+        lastcontactdate: fuDate || null,
         remarks: fuNote.trim(),
-        resume_status: fuResumeStatus || null,
-        no_of_interview_calls: fuInterviewCalls === '' ? 0 : parseInt(fuInterviewCalls, 10),
-        no_of_rounds_cleared: fuRoundsCleared === '' ? 0 : parseInt(fuRoundsCleared, 10),
+        resumestatus: fuResumeStatus || null,
+        noofinterviewcalls: fuInterviewCalls ? parseInt(fuInterviewCalls, 10) : 0,
+        noofroundscleared: fuRoundsCleared ? parseInt(fuRoundsCleared, 10) : 0,
         interested: fuInterested === '' ? null : fuInterested === 'true',
-        placed_status: fuPlacedStatus || null,
+        placedstatus: fuPlacedStatus || null,
       });
-
       toast.success('Follow-up added!');
       resetFollowupForm();
       await refreshDetail(detail.id);
     } catch (e) {
-      toast.error(e.response?.data?.error || 'Failed to add follow-up');
+      toast.error(e?.response?.data?.error || 'Failed to add follow-up');
     } finally {
       setFuLoading(false);
     }
   };
 
   const filtered = useMemo(() => {
-    return students.filter(s => {
+    return students.filter((s) => {
       const q = search.toLowerCase();
       const mQ =
         !search ||
-        s.candidate_name?.toLowerCase().includes(q) ||
+        s.candidatename?.toLowerCase().includes(q) ||
         s.phone?.includes(q) ||
         s.email?.toLowerCase().includes(q) ||
-        s.batch_name?.toLowerCase().includes(q);
+        s.batchname?.toLowerCase().includes(q);
 
-      const mB = !filterBatch || String(s.batch_id) === String(filterBatch);
+      const mB = !filterBatch || String(s.batchid) === String(filterBatch);
       return mQ && mB;
     });
   }, [students, search, filterBatch]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGESIZE));
+  const paginated = filtered.slice((page - 1) * PAGESIZE, page * PAGESIZE);
 
   useEffect(() => {
     if (page > totalPages) setPage(1);
   }, [page, totalPages]);
 
-  const totalFee = students.reduce((sum, x) => sum + toNum(x.total_fee), 0);
-  const totalPaid = students.reduce((sum, x) => sum + toNum(x.paid_amount), 0);
+  const totalFee = students.reduce((sum, x) => sum + toNum(x.totalfee), 0);
+  const totalPaid = students.reduce((sum, x) => sum + toNum(x.paidamount), 0);
   const pendingFee = Math.max(totalFee - totalPaid, 0);
 
   const paymentsWithBalance = useMemo(() => {
-    if (!detail?.total_fee || payments.length === 0) return payments;
-
-    const totalFeeNum = parseFloat(detail.total_fee || 0);
+    if (!detail?.totalfee || payments.length === 0) return payments;
+    const totalFeeNum = parseFloat(detail.totalfee || 0);
     let cumulativePaid = 0;
 
     return [...payments]
       .sort((a, b) => {
-        const da = new Date(a.payment_date || a.created_at);
-        const db = new Date(b.payment_date || b.created_at);
+        const da = new Date(a.paymentdate || a.createdat);
+        const db = new Date(b.paymentdate || b.createdat);
         return da - db;
       })
       .map((p, index) => {
         cumulativePaid += parseFloat(p.amount || 0);
         const remaining = Math.max(0, totalFeeNum - cumulativePaid);
-
         return {
           ...p,
-          cumulative_paid: cumulativePaid,
-          remaining_balance: remaining,
-          order: index,
+          cumulativepaid: cumulativePaid,
+          remainingbalance: remaining,
+          order: index + 1,
         };
       });
   }, [payments, detail]);
 
   const currentStudentBalance = detail
-    ? Math.max(toNum(detail.total_fee) - toNum(detail.paid_amount), 0)
+    ? Math.max(toNum(detail.totalfee) - toNum(detail.paidamount), 0)
     : 0;
+
+  const filteredBatchOptions = batches.filter(
+    (b) => !form.courseid || String(b.course_id) === String(form.courseid)
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -367,18 +470,18 @@ export default function AdminStudents() {
                 cursor: syncingSheet ? 'not-allowed' : 'pointer',
               }}
             >
-              {syncingSheet ? '⏳ Syncing...' : '📄 Sync Students Sheet'}
+              {syncingSheet ? 'Syncing...' : 'Sync Students Sheet'}
             </button>
 
             <button
               type="button"
               onClick={() => {
-                setShowAdd(true);
                 resetAddForm();
+                setShowAdd(true);
               }}
               style={S.btnP}
             >
-              ➕ Enroll Student
+              Enroll Student
             </button>
           </div>
         </div>
@@ -386,9 +489,9 @@ export default function AdminStudents() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 16 }}>
           {[
             { label: 'Total Students', value: students.length, color: '#111', bg: '#f9f9f9' },
-            { label: 'Total Fee', value: `₹${(totalFee / 1000).toFixed(1)}K`, color: '#185FA5', bg: '#EFF6FF' },
-            { label: 'Collected', value: `₹${(totalPaid / 1000).toFixed(1)}K`, color: G, bg: '#E1F5EE' },
-            { label: 'Pending', value: `₹${(pendingFee / 1000).toFixed(1)}K`, color: '#DC2626', bg: '#FEF2F2' },
+            { label: 'Total Fee', value: `${(totalFee / 1000).toFixed(1)}K`, color: '#185FA5', bg: '#EFF6FF' },
+            { label: 'Collected', value: `${(totalPaid / 1000).toFixed(1)}K`, color: G, bg: '#E1F5EE' },
+            { label: 'Pending', value: `${(pendingFee / 1000).toFixed(1)}K`, color: '#DC2626', bg: '#FEF2F2' },
           ].map((k, i) => (
             <div key={i} style={{ background: k.bg, borderRadius: 10, padding: '12px 14px' }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: k.color, lineHeight: 1 }}>{k.value}</div>
@@ -397,12 +500,12 @@ export default function AdminStudents() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr auto', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr auto', gap: 8, marginBottom: 14 }}>
           <input
             style={{ ...S.input, minWidth: 220 }}
-            placeholder="🔍 Search name / phone / email / batch..."
+            placeholder="Search name / phone / email / batch..."
             value={search}
-            onChange={e => {
+            onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
@@ -411,224 +514,208 @@ export default function AdminStudents() {
           <select
             style={S.input}
             value={filterBatch}
-            onChange={e => {
+            onChange={(e) => {
               setFilterBatch(e.target.value);
               setPage(1);
             }}
           >
             <option value="">All Batches</option>
-            {batches.map(b => (
-              <option key={b.id} value={b.id}>{b.batch_name}</option>
+            {batches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.batch_name}
+              </option>
             ))}
           </select>
 
-          {(search || filterBatch) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('');
-                setFilterBatch('');
-                setPage(1);
-              }}
-              style={{ ...S.btnS, color: '#DC2626', borderColor: '#fecaca', fontSize: 11 }}
-            >
-              ✕ Clear
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('');
+              setFilterBatch('');
+              setPage(1);
+            }}
+            style={{ ...S.btnS, color: '#DC2626', borderColor: '#fecaca', fontSize: 11 }}
+          >
+            Clear
+          </button>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 50, color: '#aaa', fontSize: 13 }}>⏳ Loading…</div>
+          <div style={{ textAlign: 'center', padding: 50, color: '#aaa', fontSize: 13 }}>Loading...</div>
         ) : paginated.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 50, color: '#bbb', fontSize: 13 }}>
-            {students.length === 0 ? '📭 No students yet — enroll one!' : '🔍 No students match your search'}
+            {students.length === 0 ? 'No students yet — enroll one!' : 'No students match your search'}
           </div>
         ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={S.table}>
-                <thead>
-                  <tr>
-                    <th style={S.th}>#</th>
-                    <th style={S.th}>Student</th>
-                    <th style={S.th}>Phone</th>
-                    <th style={S.th}>Batch</th>
-                    <th style={S.th}>Fee</th>
-                    <th style={S.th}>Paid</th>
-                    <th style={S.th}>Balance</th>
-                    <th style={S.th}>Fee Status</th>
-                    <th style={S.th}>Joined</th>
-                    <th style={S.th}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((s, i) => {
-                    const paid = toNum(s.paid_amount);
-                    const total = toNum(s.total_fee);
-                    const balance = Math.max(total - paid, 0);
-                    const fc = feeColor(paid, total);
+          <div style={{ overflowX: 'auto' }}>
+            <table style={S.table}>
+              <thead>
+                <tr>
+                  <th style={S.th}>#</th>
+                  <th style={S.th}>Student</th>
+                  <th style={S.th}>Phone</th>
+                  <th style={S.th}>Batch</th>
+                  <th style={S.th}>Fee</th>
+                  <th style={S.th}>Paid</th>
+                  <th style={S.th}>Balance</th>
+                  <th style={S.th}>Fee Status</th>
+                  <th style={S.th}>Joined</th>
+                  <th style={S.th}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((s, i) => {
+                  const paid = toNum(s.paidamount);
+                  const total = toNum(s.totalfee);
+                  const balance = Math.max(total - paid, 0);
+                  const fc = feeColor(paid, total);
 
-                    return (
-                      <tr
-                        key={s.id}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f0faf5')}
-                        onMouseLeave={e => (e.currentTarget.style.background = '')}
-                      >
-                        <td style={{ ...S.td, color: '#ccc', fontSize: 11 }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
-
-                        <td style={S.td}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div
-                              style={{
-                                width: 30,
-                                height: 30,
-                                borderRadius: '50%',
-                                flexShrink: 0,
-                                background: `linear-gradient(135deg,${G},#15c78a)`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#fff',
-                                fontSize: 11,
-                                fontWeight: 700,
-                              }}
-                            >
-                              {s.candidate_name?.[0]?.toUpperCase() || '?'}
-                            </div>
-
-                            <div>
-                              <div
-                                style={{
-                                  fontWeight: 700,
-                                  color: '#111',
-                                  cursor: 'pointer',
-                                  textDecoration: 'underline dotted',
-                                  textUnderlineOffset: 3,
-                                }}
-                                onClick={() => openDetail(s)}
-                              >
-                                {s.candidate_name}
-                              </div>
-                              <div style={{ fontSize: 10, color: '#aaa' }}>{s.email || '—'}</div>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td style={S.td}>{s.phone || '—'}</td>
-
-                        <td style={S.td}>
-                          {s.batch_name
-                            ? <span style={{ background: '#EFF6FF', color: '#185FA5', fontSize: 10, padding: '2px 8px', borderRadius: 8 }}>{s.batch_name}</span>
-                            : <span style={{ color: '#ccc' }}>—</span>}
-                        </td>
-
-                        <td style={S.td}>{fmtMoney(total)}</td>
-
-                        <td style={S.td}>
-                          <span style={{ background: fc.bg, color: fc.color, fontSize: 11, padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
-                            {fmtMoney(paid)}
-                          </span>
-                        </td>
-
-                        <td style={S.td}>
-                          {balance > 0
-                            ? <span style={{ color: '#DC2626', fontWeight: 700 }}>{fmtMoney(balance)}</span>
-                            : <span style={{ color: G, fontWeight: 700 }}>✓ Clear</span>}
-                        </td>
-
-                        <td style={S.td}>
-                          <span
+                  return (
+                    <tr
+                      key={s.id}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#f0faf5'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
+                    >
+                      <td style={{ ...S.td, color: '#ccc', fontSize: 11 }}>{(page - 1) * PAGESIZE + i + 1}</td>
+                      <td style={S.td}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div
                             style={{
-                              fontSize: 10,
-                              padding: '2px 8px',
-                              borderRadius: 20,
-                              fontWeight: 600,
-                              background:
-                                s.fee_status === 'paid'
-                                  ? '#E1F5EE'
-                                  : s.fee_status === 'partial'
-                                  ? '#FEF3C7'
-                                  : '#f0f0f0',
-                              color:
-                                s.fee_status === 'paid'
-                                  ? G
-                                  : s.fee_status === 'partial'
-                                  ? '#92400E'
-                                  : '#888',
+                              width: 30,
+                              height: 30,
+                              borderRadius: '50%',
+                              flexShrink: 0,
+                              background: 'linear-gradient(135deg,#1D9E75,#15c78a)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: 11,
+                              fontWeight: 700,
                             }}
                           >
-                            {s.fee_status || '—'}
+                            {s.candidatename?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <div
+                              style={{ fontWeight: 700, color: '#111', cursor: 'pointer', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                              onClick={() => openDetail(s)}
+                            >
+                              {s.candidatename}
+                            </div>
+                            <div style={{ fontSize: 10, color: '#aaa' }}>{s.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={S.td}>{s.phone}</td>
+                      <td style={S.td}>
+                        {s.batchname ? (
+                          <span style={{ background: '#EFF6FF', color: '#185FA5', fontSize: 10, padding: '2px 8px', borderRadius: 8 }}>
+                            {s.batchname}
                           </span>
-                        </td>
+                        ) : (
+                          <span style={{ color: '#ccc' }}>—</span>
+                        )}
+                      </td>
+                      <td style={S.td}>{fmtMoney(total)}</td>
+                      <td style={S.td}>
+                        <span style={{ background: fc.bg, color: fc.color, fontSize: 11, padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
+                          {fmtMoney(paid)}
+                        </span>
+                      </td>
+                      <td style={S.td}>
+                        {balance > 0 ? (
+                          <span style={{ color: '#DC2626', fontWeight: 700 }}>{fmtMoney(balance)}</span>
+                        ) : (
+                          <span style={{ color: G, fontWeight: 700 }}>Clear</span>
+                        )}
+                      </td>
+                      <td style={S.td}>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: '2px 8px',
+                            borderRadius: 20,
+                            fontWeight: 600,
+                            background:
+                              s.feestatus === 'paid' ? '#E1F5EE' :
+                              s.feestatus === 'partial' ? '#FEF3C7' :
+                              '#f0f0f0',
+                            color:
+                              s.feestatus === 'paid' ? G :
+                              s.feestatus === 'partial' ? '#92400E' :
+                              '#888',
+                          }}
+                        >
+                          {s.feestatus}
+                        </span>
+                      </td>
+                      <td style={{ ...S.td, whiteSpace: 'nowrap', fontSize: 11, color: '#888' }}>
+                        {fmtDate(s.joineddate || s.joindate)}
+                      </td>
+                      <td style={S.td}>
+                        <button
+                          type="button"
+                          onClick={() => openDetail(s)}
+                          style={{ fontSize: 10, padding: '5px 10px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                        <td style={{ ...S.td, whiteSpace: 'nowrap', fontSize: 11, color: '#888' }}>
-                          {fmtDate(s.joined_date || s.join_date)}
-                        </td>
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 14 }}>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              style={{ ...S.btnS, padding: '5px 12px', opacity: page === 1 ? 0.4 : 1 }}
+            >
+              Prev
+            </button>
 
-                        <td style={S.td}>
-                          <button
-                            type="button"
-                            onClick={() => openDetail(s)}
-                            style={{ fontSize: 10, padding: '5px 10px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}
-                          >
-                            👁 View
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                type="button"
+                key={p}
+                onClick={() => setPage(p)}
+                style={{
+                  ...S.btnS,
+                  padding: '5px 10px',
+                  minWidth: 32,
+                  background: p === page ? G : '#fff',
+                  color: p === page ? '#fff' : '#333',
+                  border: `1px solid ${p === page ? G : '#ddd'}`,
+                  fontWeight: p === page ? 700 : 400,
+                }}
+              >
+                {p}
+              </button>
+            ))}
 
-            {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 14 }}>
-                <button
-                  type="button"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  style={{ ...S.btnS, padding: '5px 12px', opacity: page === 1 ? 0.4 : 1 }}
-                >
-                  ‹
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button
-                    type="button"
-                    key={p}
-                    onClick={() => setPage(p)}
-                    style={{
-                      ...S.btnS,
-                      padding: '5px 10px',
-                      minWidth: 32,
-                      background: p === page ? G : '#fff',
-                      color: p === page ? '#fff' : '#333',
-                      border: `1px solid ${p === page ? G : '#ddd'}`,
-                      fontWeight: p === page ? 700 : 400,
-                    }}
-                  >
-                    {p}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  style={{ ...S.btnS, padding: '5px 12px', opacity: page === totalPages ? 0.4 : 1 }}
-                >
-                  ›
-                </button>
-              </div>
-            )}
-          </>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              style={{ ...S.btnS, padding: '5px 12px', opacity: page === totalPages ? 0.4 : 1 }}
+            >
+              Next
+            </button>
+          </div>
         )}
       </div>
 
       {showAdd && (
-        <div style={S.modal} onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
+        <div style={S.modal} onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}>
           <div style={S.modalBox}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: G, marginBottom: 4 }}>🎓 Enroll New Student</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: G, marginBottom: 4 }}>Enroll New Student</div>
             <div style={{ fontSize: 11, color: '#888', marginBottom: 20 }}>Add a new student to the system</div>
 
             <div style={S.row2}>
@@ -636,19 +723,18 @@ export default function AdminStudents() {
                 <label style={S.label}>Full Name *</label>
                 <input
                   style={S.inputFull}
-                  value={form.candidate_name}
-                  onChange={e => set('candidate_name', e.target.value)}
+                  value={form.candidatename}
+                  onChange={(e) => set('candidatename', e.target.value)}
                   placeholder="Student name"
                   autoFocus
                 />
               </div>
-
               <div style={S.field}>
                 <label style={S.label}>Phone *</label>
                 <input
                   style={S.inputFull}
                   value={form.phone}
-                  onChange={e => set('phone', e.target.value)}
+                  onChange={(e) => set('phone', e.target.value)}
                   placeholder="10-digit mobile"
                 />
               </div>
@@ -661,18 +747,17 @@ export default function AdminStudents() {
                   style={S.inputFull}
                   type="email"
                   value={form.email}
-                  onChange={e => set('email', e.target.value)}
+                  onChange={(e) => set('email', e.target.value)}
                   placeholder="email@example.com"
                 />
               </div>
-
               <div style={S.field}>
                 <label style={S.label}>Join Date</label>
                 <input
                   style={S.inputFull}
                   type="date"
-                  value={form.join_date}
-                  onChange={e => set('join_date', e.target.value)}
+                  value={form.joindate}
+                  onChange={(e) => set('joindate', e.target.value)}
                 />
               </div>
             </div>
@@ -682,15 +767,17 @@ export default function AdminStudents() {
                 <label style={S.label}>Course</label>
                 <select
                   style={S.select}
-                  value={form.course_id}
-                  onChange={e => {
-                    set('course_id', e.target.value);
-                    set('batch_id', '');
+                  value={form.courseid}
+                  onChange={(e) => {
+                    set('courseid', e.target.value);
+                    set('batchid', '');
                   }}
                 >
                   <option value="">Select course</option>
-                  {courses.map(c => (
-                    <option key={c.id} value={c.id}>{c.course_name}</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.coursename || c.course_name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -699,38 +786,37 @@ export default function AdminStudents() {
                 <label style={S.label}>Batch</label>
                 <select
                   style={S.select}
-                  value={form.batch_id}
-                  onChange={e => set('batch_id', e.target.value)}
+                  value={form.batchid}
+                  onChange={(e) => set('batchid', e.target.value)}
                 >
                   <option value="">Select batch</option>
-                  {batches
-                    .filter(b => !form.course_id || String(b.course_id) === String(form.course_id))
-                    .map(b => (
-                      <option key={b.id} value={b.id}>{b.batch_name}</option>
-                    ))}
+                  {filteredBatchOptions.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.batch_name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
             <div style={S.row2}>
               <div style={S.field}>
-                <label style={S.label}>Total Fee (₹)</label>
+                <label style={S.label}>Total Fee</label>
                 <input
                   style={S.inputFull}
                   type="number"
-                  value={form.total_fee}
-                  onChange={e => set('total_fee', e.target.value)}
+                  value={form.totalfee}
+                  onChange={(e) => set('totalfee', e.target.value)}
                   placeholder="e.g. 25000"
                 />
               </div>
-
               <div style={S.field}>
-                <label style={S.label}>Initial Payment (₹)</label>
+                <label style={S.label}>Initial Payment</label>
                 <input
                   style={S.inputFull}
                   type="number"
-                  value={form.paid_amount}
-                  onChange={e => set('paid_amount', e.target.value)}
+                  value={form.paidamount}
+                  onChange={(e) => set('paidamount', e.target.value)}
                   placeholder="Amount paid today"
                 />
               </div>
@@ -738,16 +824,18 @@ export default function AdminStudents() {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" style={S.btnP} onClick={handleCreate} disabled={saving}>
-                {saving ? 'Enrolling…' : '✅ Enroll Student'}
+                {saving ? 'Enrolling...' : 'Enroll Student'}
               </button>
-              <button type="button" style={S.btnS} onClick={() => setShowAdd(false)}>Cancel</button>
+              <button type="button" style={S.btnS} onClick={() => setShowAdd(false)}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {detail && (
-        <div style={S.panel} onClick={e => e.target === e.currentTarget && setDetail(null)}>
+        <div style={S.panel} onClick={(e) => e.target === e.currentTarget && setDetail(null)}>
           <div style={S.panelBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -756,7 +844,7 @@ export default function AdminStudents() {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    background: `linear-gradient(135deg,${G},#15c78a)`,
+                    background: 'linear-gradient(135deg,#1D9E75,#15c78a)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -766,13 +854,12 @@ export default function AdminStudents() {
                     flexShrink: 0,
                   }}
                 >
-                  {detail.candidate_name?.[0]?.toUpperCase() || '?'}
+                  {detail.candidatename?.[0]?.toUpperCase() || '?'}
                 </div>
-
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>{detail.candidate_name}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>{detail.candidatename}</div>
                   <div style={{ fontSize: 11, color: '#888' }}>
-                    {detail.phone || '—'} · {detail.email || 'No email'}
+                    {detail.phone} • {detail.email || 'No email'}
                   </div>
                 </div>
               </div>
@@ -782,19 +869,19 @@ export default function AdminStudents() {
                 onClick={() => setDetail(null)}
                 style={{ background: 'none', border: 'none', fontSize: 20, color: '#aaa', cursor: 'pointer' }}
               >
-                ✕
+                ×
               </button>
             </div>
 
             <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f5f5f5', borderRadius: 10, padding: 4 }}>
               {[
-                { key: 'overview', label: '📋 Overview' },
-                { key: 'payments', label: `💰 Payments (${payments.length})` },
-                { key: 'followups', label: `📞 Follow-ups (${followups.length})` },
-              ].map(t => (
+                { key: 'overview', label: 'Overview' },
+                { key: 'payments', label: `Payments (${payments.length})` },
+                { key: 'followups', label: `Follow-ups (${followups.length})` },
+              ].map((t) => (
                 <button
-                  type="button"
                   key={t.key}
+                  type="button"
                   onClick={() => setActiveTab(t.key)}
                   style={{
                     flex: 1,
@@ -818,61 +905,54 @@ export default function AdminStudents() {
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
                   {[
-                    { label: 'Batch', value: detail.batch_name || '—' },
-                    { label: 'Course', value: detail.course_name || '—' },
-                    { label: 'Joined', value: fmtDate(detail.joined_date) },
-                    { label: 'Status', value: detail.status || '—' },
-                    { label: 'Total Fee', value: fmtMoney(detail.total_fee) },
-                    { label: 'Paid', value: fmtMoney(detail.paid_amount) },
+                    { label: 'Batch', value: detail.batchname },
+                    { label: 'Course', value: detail.coursename },
+                    { label: 'Joined', value: fmtDate(detail.joineddate) },
+                    { label: 'Status', value: detail.status },
+                    { label: 'Total Fee', value: fmtMoney(detail.totalfee) },
+                    { label: 'Paid', value: fmtMoney(detail.paidamount) },
                   ].map((r, i) => (
                     <div key={i} style={{ background: '#f9f9f9', borderRadius: 8, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>{r.label}</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>{r.value}</div>
+                      <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>
+                        {r.label}
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>{r.value || '—'}</div>
                     </div>
                   ))}
                 </div>
 
-                {toNum(detail.total_fee) > 0 && (
+                {toNum(detail.totalfee) > 0 && (
                   <div style={{ background: '#f9f9f9', borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 600, marginBottom: 6 }}>
                       <span>Fee Progress</span>
                       <span style={{ color: currentStudentBalance === 0 ? G : '#D97706' }}>
-                        {Math.min(100, (toNum(detail.paid_amount) / toNum(detail.total_fee)) * 100).toFixed(0)}% paid
+                        {Math.min(100, (toNum(detail.paidamount) / toNum(detail.totalfee)) * 100).toFixed(0)}% paid
                       </span>
                     </div>
-
                     <div style={{ height: 8, background: '#e5e5e5', borderRadius: 4, overflow: 'hidden' }}>
                       <div
                         style={{
-                          width: `${Math.min(100, (toNum(detail.paid_amount) / toNum(detail.total_fee)) * 100)}%`,
+                          width: `${Math.min(100, (toNum(detail.paidamount) / toNum(detail.totalfee)) * 100)}%`,
                           height: '100%',
                           borderRadius: 4,
-                          background:
-                            currentStudentBalance === 0
-                              ? G
-                              : toNum(detail.paid_amount) >= toNum(detail.total_fee) / 2
-                              ? '#D97706'
-                              : '#DC2626',
+                          background: currentStudentBalance === 0 ? G : (toNum(detail.paidamount) / toNum(detail.totalfee)) >= 0.5 ? '#D97706' : '#DC2626',
                           transition: 'width 0.5s ease',
                         }}
                       />
                     </div>
-
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#aaa', marginTop: 4 }}>
-                      <span>Paid: {fmtMoney(detail.paid_amount)}</span>
-                      <span>Balance: {fmtMoney(currentStudentBalance)}</span>
+                      <span>Paid {fmtMoney(detail.paidamount)}</span>
+                      <span>Balance {fmtMoney(currentStudentBalance)}</span>
                     </div>
                   </div>
                 )}
 
                 <div style={{ background: '#FCFCFC', border: '1px solid #eee', borderRadius: 10, padding: 12 }}>
                   <div style={{ fontSize: 11, color: '#666', marginBottom: 4, fontWeight: 700 }}>Recent follow-up</div>
-                  <div style={{ fontSize: 12, color: '#333' }}>
-                    {followups[0]?.remarks || 'No follow-up yet'}
-                  </div>
+                  <div style={{ fontSize: 12, color: '#333' }}>{followups[0]?.remarks || 'No follow-up yet'}</div>
                   {followups[0] && (
                     <div style={{ marginTop: 4, fontSize: 10, color: '#999' }}>
-                      {fmtDate(followups[0].last_contact_date || followups[0].created_at)}
+                      {fmtDate(followups[0].lastcontactdate || followups[0].createdat)}
                     </div>
                   )}
                 </div>
@@ -881,32 +961,30 @@ export default function AdminStudents() {
 
             {activeTab === 'payments' && (
               <>
-                <div style={{ background: '#f0faf5', borderRadius: 10, padding: 14, marginBottom: 14, border: `1px solid ${G}22` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: G, marginBottom: 10 }}>➕ Record Payment</div>
-
+                <div style={{ background: '#f0faf5', borderRadius: 10, padding: 14, marginBottom: 14, border: '1px solid #1D9E7533' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: G, marginBottom: 10 }}>Record Payment</div>
                   <div style={{ fontSize: 11, color: '#666', marginBottom: 10 }}>
                     Remaining balance: <span style={{ fontWeight: 700, color: currentStudentBalance === 0 ? G : '#DC2626' }}>{fmtMoney(currentStudentBalance)}</span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                     <div>
-                      <label style={S.label}>Amount (₹) *</label>
+                      <label style={S.label}>Amount</label>
                       <input
                         style={S.inputFull}
                         type="number"
                         value={payAmt}
-                        onChange={e => setPayAmt(e.target.value)}
+                        onChange={(e) => setPayAmt(e.target.value)}
                         placeholder="e.g. 5000"
                       />
                     </div>
-
                     <div>
                       <label style={S.label}>Date</label>
                       <input
                         style={S.inputFull}
                         type="date"
                         value={payDate}
-                        onChange={e => setPayDate(e.target.value)}
+                        onChange={(e) => setPayDate(e.target.value)}
                       />
                     </div>
                   </div>
@@ -916,13 +994,13 @@ export default function AdminStudents() {
                     <input
                       style={S.inputFull}
                       value={payNote}
-                      onChange={e => setPayNote(e.target.value)}
+                      onChange={(e) => setPayNote(e.target.value)}
                       placeholder="Optional note"
                     />
                   </div>
 
                   <button type="button" style={{ ...S.btnP, fontSize: 11 }} onClick={handlePayment} disabled={payLoading}>
-                    {payLoading ? 'Saving…' : '💰 Add Payment'}
+                    {payLoading ? 'Saving...' : 'Add Payment'}
                   </button>
                 </div>
 
@@ -931,12 +1009,11 @@ export default function AdminStudents() {
                 ) : (
                   <div style={{ background: '#f9f9f9', borderRadius: 12, padding: 16, border: '1px solid #e5e5e5' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#111', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #e0e0e0' }}>
-                      💳 Payment History (Total Fee: {fmtMoney(detail.total_fee)})
+                      Payment History • Total Fee {fmtMoney(detail.totalfee)}
                     </div>
 
                     {paymentsWithBalance.map((p, i) => {
-                      const balanceColor = p.remaining_balance === 0 ? G : '#DC2626';
-
+                      const balanceColor = p.remainingbalance === 0 ? G : '#DC2626';
                       return (
                         <div
                           key={p.id || i}
@@ -952,18 +1029,12 @@ export default function AdminStudents() {
                         >
                           <div>
                             <div style={{ fontWeight: 700, color: G, fontSize: 12 }}>{fmtMoney(p.amount)}</div>
-                            <div style={{ color: '#666', marginTop: 2 }}>{p.notes || '—'}</div>
+                            <div style={{ color: '#666', marginTop: 2 }}>{p.notes}</div>
                           </div>
-
-                          <div style={{ fontWeight: 600, color: '#333' }}>{fmtDate(p.payment_date)}</div>
-                          <div style={{ fontWeight: 600, color: '#185FA5' }}>{fmtMoney(p.cumulative_paid)}</div>
-                          <div style={{ fontWeight: 700, color: balanceColor }}>{fmtMoney(p.remaining_balance)}</div>
-
-                          <div>
-                            {p.remaining_balance === 0 && (
-                              <div style={{ color: G, fontSize: 10, fontWeight: 700 }}>✅ PAID</div>
-                            )}
-                          </div>
+                          <div>{fmtDate(p.paymentdate || p.createdat)}</div>
+                          <div>Cumulative: {fmtMoney(p.cumulativepaid)}</div>
+                          <div style={{ color: balanceColor, fontWeight: 700 }}>{fmtMoney(p.remainingbalance)}</div>
+                          <div>#{p.order}</div>
                         </div>
                       );
                     })}
@@ -974,112 +1045,70 @@ export default function AdminStudents() {
 
             {activeTab === 'followups' && (
               <>
-                <div style={{ background: '#f0faf5', borderRadius: 10, padding: 14, marginBottom: 14, border: `1px solid ${G}22` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: G, marginBottom: 10 }}>➕ Add Follow-up</div>
+                <div style={{ background: '#FCFCFC', border: '1px solid #eee', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#111', marginBottom: 10 }}>Add Follow-up</div>
 
                   <div style={S.row2}>
-                    <div style={S.field}>
-                      <label style={S.label}>Follow-up Type</label>
-                      <select style={S.select} value={fuType} onChange={e => setFuType(e.target.value)}>
+                    <div>
+                      <label style={S.label}>Type</label>
+                      <select style={S.select} value={fuType} onChange={(e) => setFuType(e.target.value)}>
                         <option value="general">General</option>
-                        <option value="project">Project</option>
-                        <option value="playwright">Playwright</option>
+                        <option value="call">Call</option>
+                        <option value="resume">Resume</option>
+                        <option value="interview">Interview</option>
+                        <option value="placement">Placement</option>
                       </select>
                     </div>
-
-                    <div style={S.field}>
-                      <label style={S.label}>Last Contact Date</label>
-                      <input
-                        style={S.inputFull}
-                        type="date"
-                        value={fuDate}
-                        onChange={e => setFuDate(e.target.value)}
-                      />
+                    <div>
+                      <label style={S.label}>Date</label>
+                      <input style={S.inputFull} type="date" value={fuDate} onChange={(e) => setFuDate(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={S.row2}>
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Call Status</label>
-                      <select style={S.select} value={fuCallStatus} onChange={e => setFuCallStatus(e.target.value)}>
-                        <option value="">Select</option>
-                        <option value="picked">Picked</option>
-                        <option value="not_picked">Not Picked</option>
-                        <option value="busy">Busy</option>
-                      </select>
+                      <input style={S.inputFull} value={fuCallStatus} onChange={(e) => setFuCallStatus(e.target.value)} />
                     </div>
-
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Resume Status</label>
-                      <input
-                        style={S.inputFull}
-                        value={fuResumeStatus}
-                        onChange={e => setFuResumeStatus(e.target.value)}
-                        placeholder="Optional"
-                      />
+                      <input style={S.inputFull} value={fuResumeStatus} onChange={(e) => setFuResumeStatus(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={S.row2}>
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Interview Calls</label>
-                      <input
-                        style={S.inputFull}
-                        type="number"
-                        min="0"
-                        value={fuInterviewCalls}
-                        onChange={e => setFuInterviewCalls(e.target.value)}
-                        placeholder="0"
-                      />
+                      <input style={S.inputFull} type="number" value={fuInterviewCalls} onChange={(e) => setFuInterviewCalls(e.target.value)} />
                     </div>
-
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Rounds Cleared</label>
-                      <input
-                        style={S.inputFull}
-                        type="number"
-                        min="0"
-                        value={fuRoundsCleared}
-                        onChange={e => setFuRoundsCleared(e.target.value)}
-                        placeholder="0"
-                      />
+                      <input style={S.inputFull} type="number" value={fuRoundsCleared} onChange={(e) => setFuRoundsCleared(e.target.value)} />
                     </div>
                   </div>
 
                   <div style={S.row2}>
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Interested</label>
-                      <select style={S.select} value={fuInterested} onChange={e => setFuInterested(e.target.value)}>
+                      <select style={S.select} value={fuInterested} onChange={(e) => setFuInterested(e.target.value)}>
                         <option value="">Select</option>
                         <option value="true">Yes</option>
                         <option value="false">No</option>
                       </select>
                     </div>
-
-                    <div style={S.field}>
+                    <div>
                       <label style={S.label}>Placed Status</label>
-                      <select style={S.select} value={fuPlacedStatus} onChange={e => setFuPlacedStatus(e.target.value)}>
-                        <option value="">Select</option>
-                        <option value="placed">Placed</option>
-                        <option value="offer_pending">Offer Pending</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="in_process">In Process</option>
-                      </select>
+                      <input style={S.inputFull} value={fuPlacedStatus} onChange={(e) => setFuPlacedStatus(e.target.value)} />
                     </div>
                   </div>
 
-                  <div style={S.field}>
-                    <label style={S.label}>Remarks *</label>
-                    <textarea
-                      style={S.textarea}
-                      value={fuNote}
-                      onChange={e => setFuNote(e.target.value)}
-                      placeholder="Follow-up notes / remarks"
-                    />
+                  <div style={{ marginBottom: 8 }}>
+                    <label style={S.label}>Remarks</label>
+                    <textarea style={S.textarea} value={fuNote} onChange={(e) => setFuNote(e.target.value)} />
                   </div>
 
                   <button type="button" style={{ ...S.btnP, fontSize: 11 }} onClick={handleFollowup} disabled={fuLoading}>
-                    {fuLoading ? 'Saving…' : '📞 Add Follow-up'}
+                    {fuLoading ? 'Saving...' : 'Add Follow-up'}
                   </button>
                 </div>
 
@@ -1087,67 +1116,11 @@ export default function AdminStudents() {
                   <div style={{ textAlign: 'center', padding: 30, color: '#bbb', fontSize: 12 }}>No follow-ups yet</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {followups.map((f, i) => (
-                      <div
-                        key={f.id || i}
-                        style={{
-                          background: '#fafafa',
-                          border: '1px solid #efefef',
-                          borderRadius: 10,
-                          padding: 12,
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                            <span style={{ background: '#EFF6FF', color: '#185FA5', fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 700 }}>
-                              {(f.followup_type || 'general').replace('_', ' ')}
-                            </span>
-
-                            {f.call_status && (
-                              <span style={{ background: '#FEF3C7', color: '#92400E', fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 700 }}>
-                                {f.call_status.replace('_', ' ')}
-                              </span>
-                            )}
-
-                            {f.placed_status && (
-                              <span style={{ background: '#E1F5EE', color: '#0F6E56', fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 700 }}>
-                                {f.placed_status.replace('_', ' ')}
-                              </span>
-                            )}
-                          </div>
-
-                          <span style={{ fontSize: 10, color: '#aaa', whiteSpace: 'nowrap' }}>
-                            {fmtDate(f.last_contact_date || f.created_at)}
-                          </span>
-                        </div>
-
-                        <div style={{ fontSize: 12, color: '#333', lineHeight: 1.55, marginBottom: 8 }}>
-                          {f.remarks || '—'}
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-                          <div style={{ background: '#fff', border: '1px solid #eee', borderRadius: 8, padding: '8px 10px' }}>
-                            <div style={{ fontSize: 9, color: '#aaa', fontWeight: 700, textTransform: 'uppercase' }}>Interested</div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#333' }}>
-                              {f.interested === true ? 'Yes' : f.interested === false ? 'No' : '—'}
-                            </div>
-                          </div>
-
-                          <div style={{ background: '#fff', border: '1px solid #eee', borderRadius: 8, padding: '8px 10px' }}>
-                            <div style={{ fontSize: 9, color: '#aaa', fontWeight: 700, textTransform: 'uppercase' }}>Resume</div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#333' }}>{f.resume_status || '—'}</div>
-                          </div>
-
-                          <div style={{ background: '#fff', border: '1px solid #eee', borderRadius: 8, padding: '8px 10px' }}>
-                            <div style={{ fontSize: 9, color: '#aaa', fontWeight: 700, textTransform: 'uppercase' }}>Interview Calls</div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#333' }}>{f.no_of_interview_calls ?? 0}</div>
-                          </div>
-
-                          <div style={{ background: '#fff', border: '1px solid #eee', borderRadius: 8, padding: '8px 10px' }}>
-                            <div style={{ fontSize: 9, color: '#aaa', fontWeight: 700, textTransform: 'uppercase' }}>Rounds Cleared</div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#333' }}>{f.no_of_rounds_cleared ?? 0}</div>
-                          </div>
-                        </div>
+                    {followups.map((f) => (
+                      <div key={f.id} style={{ border: '1px solid #eee', borderRadius: 10, padding: 12, background: '#fcfcfc' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#111' }}>{f.followuptype || 'Follow-up'}</div>
+                        <div style={{ fontSize: 10, color: '#888', marginTop: 3 }}>{fmtDate(f.lastcontactdate || f.createdat)}</div>
+                        <div style={{ marginTop: 8, fontSize: 11, color: '#444' }}>{f.remarks}</div>
                       </div>
                     ))}
                   </div>
