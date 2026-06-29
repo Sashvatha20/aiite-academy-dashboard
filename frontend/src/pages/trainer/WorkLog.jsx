@@ -283,6 +283,38 @@ const styles = {
 
 const today = () => new Date().toISOString().split('T')[0];
 
+const normalizeBatch = (b) => ({
+  ...b,
+  batchname: b.batchname || b.batch_name || '',
+  batch_name: b.batch_name || b.batchname || '',
+  coursename: b.coursename || b.course_name || '',
+  course_name: b.course_name || b.coursename || '',
+  courseid: b.courseid || b.course_id || '',
+  course_id: b.course_id || b.courseid || '',
+  batchstartdate: b.batchstartdate || b.batch_start_date || '',
+  batch_start_date: b.batch_start_date || b.batchstartdate || '',
+  batchenddate: b.batchenddate || b.batch_end_date || '',
+  batch_end_date: b.batch_end_date || b.batchenddate || '',
+  weekdayweekend: b.weekdayweekend || b.weekday_weekend || '',
+  weekday_weekend: b.weekday_weekend || b.weekdayweekend || '',
+  sessiontype: b.sessiontype || b.session_type || '',
+  session_type: b.session_type || b.sessiontype || '',
+  studentcount: b.studentcount || b.student_count || 0,
+  student_count: b.student_count || b.studentcount || 0,
+});
+
+const normalizeLog = (log) => ({
+  ...log,
+  batch_name: log.batch_name || log.batchname || '',
+  batchname: log.batchname || log.batch_name || '',
+  work_description: log.work_description || log.workdescription || '',
+  progressive_working_hours:
+    log.progressive_working_hours ?? log.progressiveworkinghours ?? '',
+  star_points: log.star_points ?? log.starpoints ?? '0.00',
+  log_date: log.log_date || log.logdate || '',
+  wa_sent: Boolean(log.wa_sent),
+});
+
 export default function WorkLog() {
   const { user } = useAuth();
 
@@ -338,7 +370,7 @@ export default function WorkLog() {
 
     try {
       const r = await getMyLogs({ trainer_id: trainerId });
-      setLogs(r.data.logs || []);
+      setLogs((r.data.logs || []).map(normalizeLog));
     } catch (err) {
       toast.error(err?.response?.data?.error || 'Failed to load work logs');
     }
@@ -357,8 +389,14 @@ export default function WorkLog() {
 
   useEffect(() => {
     getBatches({ status: 'ongoing' })
-      .then((r) => setBatches(r.data.batches || []))
-      .catch((err) => toast.error(err?.response?.data?.error || 'Failed to load batches'));
+      .then((r) => {
+        const rows = r?.data?.batches || [];
+        setBatches(rows.map(normalizeBatch));
+      })
+      .catch((err) => {
+        console.error('Failed to load batches:', err?.response?.data || err);
+        toast.error(err?.response?.data?.error || 'Failed to load batches');
+      });
   }, []);
 
   useEffect(() => {
@@ -417,10 +455,10 @@ export default function WorkLog() {
         batch_id: form.batch_id || null,
         log_date: form.log_date,
         work_description: form.work_description.trim(),
-        progressive_working_hours: form.progressive_working_hours || 0,
-        star_points: form.star_points || 0,
+        progressive_working_hours: Number(form.progressive_working_hours || 0),
+        star_points: Number(form.star_points || 0),
         whatsapp_sent_to: null,
-        wa_sent: form.wa_sent ? 1 : 0,
+        wa_sent: !!form.wa_sent,
       };
 
       if (editId) {
@@ -448,8 +486,11 @@ export default function WorkLog() {
       log_date: log.log_date?.split('T')[0] || today(),
       batch_id: log.batch_id || '',
       work_description: log.work_description || '',
-      progressive_working_hours: log.progressive_working_hours || '',
-      star_points: log.star_points || '',
+      progressive_working_hours: String(log.progressive_working_hours ?? ''),
+      star_points:
+        log.star_points !== undefined && log.star_points !== null
+          ? String(log.star_points)
+          : '',
       wa_sent: Boolean(log.wa_sent),
     });
     setEditId(log.id);
@@ -463,7 +504,9 @@ export default function WorkLog() {
           <div style={styles.header}>
             <div>
               <div style={styles.title}>Daily work log</div>
-              <div style={styles.sub}>Track daily teaching work, hours, points, and sheet sync in one place.</div>
+              <div style={styles.sub}>
+                Track daily teaching work, hours, points, and sheet sync in one place.
+              </div>
             </div>
 
             <button
@@ -490,22 +533,30 @@ export default function WorkLog() {
             <div style={styles.summaryStrip}>
               <div style={styles.summaryItem}>
                 <div style={styles.summaryLabel}>Total logs</div>
-                <div style={styles.summaryValue}>{stats.total_logs ?? stats.totalLogs ?? logs.length}</div>
+                <div style={styles.summaryValue}>
+                  {stats.total_logs ?? stats.totalLogs ?? logs.length}
+                </div>
               </div>
 
               <div style={styles.summaryItem}>
                 <div style={styles.summaryLabel}>This month</div>
-                <div style={styles.summaryValue}>{stats.month_logs ?? stats.monthLogs ?? '—'}</div>
+                <div style={styles.summaryValue}>
+                  {stats.month_logs ?? stats.monthLogs ?? '—'}
+                </div>
               </div>
 
               <div style={styles.summaryItem}>
                 <div style={styles.summaryLabel}>Hours</div>
-                <div style={styles.summaryValue}>{stats.total_hours ?? stats.totalHours ?? '—'}</div>
+                <div style={styles.summaryValue}>
+                  {stats.total_hours ?? stats.totalHours ?? '—'}
+                </div>
               </div>
 
               <div style={styles.summaryItem}>
                 <div style={styles.summaryLabel}>Star points</div>
-                <div style={styles.summaryValue}>{stats.total_points ?? stats.totalPoints ?? '—'}</div>
+                <div style={styles.summaryValue}>
+                  {stats.total_points ?? stats.totalPoints ?? '—'}
+                </div>
               </div>
             </div>
           )}
@@ -556,7 +607,9 @@ export default function WorkLog() {
                     {batches.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.batch_name || b.batchname}
-                        {b.course_name || b.coursename ? ` — ${b.course_name || b.coursename}` : ''}
+                        {b.course_name || b.coursename
+                          ? ` — ${b.course_name || b.coursename}`
+                          : ''}
                       </option>
                     ))}
                   </select>
@@ -603,7 +656,9 @@ export default function WorkLog() {
               {form.work_description && (
                 <div style={styles.waBox}>
                   <div style={styles.waTitle}>WhatsApp message preview</div>
-                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{buildWAMessage()}</div>
+                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+                    {buildWAMessage()}
+                  </div>
 
                   <button
                     type="button"
@@ -680,7 +735,9 @@ export default function WorkLog() {
                           </td>
 
                           <td style={styles.td}>
-                            {log.progressive_working_hours ? `${log.progressive_working_hours}h` : '—'}
+                            {log.progressive_working_hours
+                              ? `${log.progressive_working_hours}h`
+                              : '—'}
                           </td>
 
                           <td style={styles.td}>{log.star_points ?? '0.00'}</td>
