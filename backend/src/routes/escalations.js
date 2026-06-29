@@ -13,12 +13,6 @@ function isUUID(value) {
   );
 }
 
-function normalizeResolutionNote(value) {
-  if (value === undefined || value === null) return null;
-  const trimmed = String(value).trim();
-  return trimmed || null;
-}
-
 router.get('/', auth, async (req, res) => {
   try {
     const { status, trainer_id, month, year } = req.query;
@@ -66,7 +60,6 @@ router.post('/', auth, async (req, res) => {
       description,
       no_of_count,
       status,
-      resolution_note,
     } = req.body;
 
     if (!trainer_id || !isUUID(trainer_id)) {
@@ -82,8 +75,8 @@ router.post('/', auth, async (req, res) => {
     const result = await pool.query(
       `
         INSERT INTO escalations
-          (escalation_date, trainer_id, reported_by, description, no_of_count, status, resolution_note)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+          (escalation_date, trainer_id, reported_by, description, no_of_count, status)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `,
       [
@@ -93,7 +86,6 @@ router.post('/', auth, async (req, res) => {
         String(description).trim(),
         Number(no_of_count) || 1,
         finalStatus,
-        normalizeResolutionNote(resolution_note),
       ]
     );
 
@@ -122,7 +114,6 @@ router.put('/:id', auth, async (req, res) => {
       description,
       no_of_count,
       status,
-      resolution_note,
     } = req.body;
 
     if (!isUUID(id)) {
@@ -150,9 +141,8 @@ router.put('/:id', auth, async (req, res) => {
           description = $3,
           no_of_count = $4,
           status = $5,
-          resolution_note = $6,
           updated_at = NOW()
-        WHERE id = $7
+        WHERE id = $6
         RETURNING *
       `,
       [
@@ -161,7 +151,6 @@ router.put('/:id', auth, async (req, res) => {
         String(description).trim(),
         Number(no_of_count) || 1,
         status,
-        normalizeResolutionNote(resolution_note),
         id,
       ]
     );
@@ -189,7 +178,7 @@ router.put('/:id', auth, async (req, res) => {
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, resolution_note } = req.body;
+    const { status } = req.body;
 
     if (!isUUID(id)) {
       return res.status(400).json({ error: 'Invalid escalation id' });
@@ -204,12 +193,11 @@ router.patch('/:id/status', auth, async (req, res) => {
         UPDATE escalations
         SET
           status = $1,
-          resolution_note = $2,
           updated_at = NOW()
-        WHERE id = $3
+        WHERE id = $2
         RETURNING *
       `,
-      [status, normalizeResolutionNote(resolution_note), id]
+      [status, id]
     );
 
     if (result.rows.length === 0) {

@@ -27,6 +27,10 @@ async function getSheetsClient() {
 
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+    if (credentials.private_key) {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+    }
   } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) {
     const keyPath = path.resolve(process.cwd(), process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE);
     credentials = require(keyPath);
